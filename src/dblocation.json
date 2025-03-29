@@ -1,0 +1,17 @@
+
+{"Host": "localhost",
+"Port": "5432" ,
+"User": "postgres",
+"Password": "postgres",
+"Database_name": "supplychain_db"
+},
+{
+"Host": "https://jubilant-doodle-6pjqr9gqjw62r5p4",
+"Port": "5432" ,
+"User": "postgres",
+"Password": "postgres",
+"Database_name": "supplychain_db"
+}
+
+
+

@@ -1,0 +1,1 @@
+"""Database migrations for Supply Chain Management System."""

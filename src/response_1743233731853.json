@@ -1,0 +1,340 @@
+{
+  "detail": [
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        0,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-31",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        0,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 1234 5678",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        1,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 9876 5432",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        2,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 9876 5400",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        3,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-28",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        3,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 6222 3344",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        4,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-27",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        4,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 6888 9988",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        5,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-25",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        5,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 6333 4444",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        6,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-29",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        6,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 6555 7777",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        7,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-30",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        7,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 6888 7777",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        8,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-26",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        8,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 6123 4567",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        9,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-24",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        9,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 6444 1122",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        10,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-23",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        10,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 6999 8833",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        11,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-21",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        11,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 6555 1212",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    },
+    {
+      "type": "datetime_parsing",
+      "loc": [
+        "body",
+        12,
+        "registration_date"
+      ],
+      "msg": "Input should be a valid datetime, invalid datetime separator, expected `T`, `t`, `_` or space",
+      "input": "2025-03-20",
+      "ctx": {
+        "error": "invalid datetime separator, expected `T`, `t`, `_` or space"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/datetime_parsing"
+    },
+    {
+      "type": "string_pattern_mismatch",
+      "loc": [
+        "body",
+        12,
+        "contact_phone"
+      ],
+      "msg": "String should match pattern '^\\+?1?\\d{9,15}$'",
+      "input": "+65 6888 9090",
+      "ctx": {
+        "pattern": "^\\+?1?\\d{9,15}$"
+      },
+      "url": "https://errors.pydantic.dev/2.4/v/string_pattern_mismatch"
+    }
+  ]
+}

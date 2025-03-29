@@ -1,27 +1,15 @@
 .PHONY: setup dev-setup start stop clean test migrate init-db check-deps
 
 # System dependencies versions
+PYTHON_VERSION := 3.11
 PG_VERSION := 14
 VENV_NAME := .venv
 
-# Detect environment (container vs normal)
-CONTAINER_ENV := $(shell test -f /.dockerenv && echo 1 || echo 0)
-ifeq ($(CONTAINER_ENV),1)
-	SERVICE_CMD := service
-else
-	SERVICE_CMD := systemctl
-endif
-
 # Check system dependencies
 check-deps:
-	@which python3 > /dev/null || (echo "Installing Python..." && sudo apt-get update && sudo apt-get install -y python3-minimal python3-venv)
+	@which brew > /dev/null || (echo "Installing Homebrew..." && /bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)")
 	@which rustc > /dev/null || (echo "Installing Rust..." && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh)
 	@source "$$HOME/.cargo/env" || true
-	@echo "Setting up PostgreSQL repository..."
-	@sudo apt-get install -y curl ca-certificates gnupg
-	@curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg
-	@echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $$(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/postgresql.list > /dev/null
-	@sudo apt-get update
 
 # Python packages with specific versions
 BASE_REQUIREMENTS := \
@@ -43,13 +31,12 @@ DEV_REQUIREMENTS := \
 
 # System packages setup
 setup: check-deps clean
-	sudo apt-get update
-	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-$(PG_VERSION) postgresql-contrib-$(PG_VERSION)
-	sudo apt-get install -y python3-venv python3-pip
-	python3 -m venv $(VENV_NAME)
-	. $(VENV_NAME)/bin/activate && python3 -m pip install --upgrade pip wheel setuptools
+	brew install python@$(PYTHON_VERSION) postgresql@$(PG_VERSION) || brew upgrade python@$(PYTHON_VERSION) postgresql@$(PG_VERSION)
+	brew link --force python@$(PYTHON_VERSION)
+	python$(PYTHON_VERSION) -m venv $(VENV_NAME)
+	. $(VENV_NAME)/bin/activate && pip install --upgrade pip wheel setuptools
 	. $(VENV_NAME)/bin/activate && PYTHONPATH=$(PWD) pip install $(BASE_REQUIREMENTS)
-	sudo $(SERVICE_CMD) postgresql start
+	brew services start postgresql@$(PG_VERSION)
 
 # Development environment setup
 dev-setup: setup
@@ -57,8 +44,8 @@ dev-setup: setup
 
 # Database initialization
 init-db:
-	sudo $(SERVICE_CMD) postgresql start
-	sudo -u postgres createdb supplychain_db || true
+	brew services start postgresql@$(PG_VERSION)
+	createdb supplychain_db || true
 	test -f alembic.ini || (. $(VENV_NAME)/bin/activate && alembic init migrations)
 	. $(VENV_NAME)/bin/activate && alembic upgrade head
 
@@ -68,12 +55,12 @@ start:
 
 # Stop services
 stop:
-	sudo $(SERVICE_CMD) postgresql stop
+	brew services stop postgresql@$(PG_VERSION)
 
 # Clean environment
 clean:
-	sudo $(SERVICE_CMD) postgresql stop || true
-	-deactivate || true
+	brew services stop postgresql@$(PG_VERSION) || true
+	deactivate 2>/dev/null || true
 	rm -rf $(VENV_NAME)
 	find . -type d -name __pycache__ -exec rm -r {} +
 

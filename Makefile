@@ -7,7 +7,7 @@ VENV_NAME := .venv
 
 # Check system dependencies
 check-deps:
-	@which brew > /dev/null || (echo "Installing Homebrew..." && /bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)")
+	@which python3 > /dev/null || (echo "Installing Python..." && sudo apt-get update && sudo apt-get install -y python$(PYTHON_VERSION))
 	@which rustc > /dev/null || (echo "Installing Rust..." && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh)
 	@source "$$HOME/.cargo/env" || true
 
@@ -28,18 +28,14 @@ DEV_REQUIREMENTS := \
 	black==23.10.1 \
 	flake8==6.1.0
 
-# Homebrew setup (system packages)
-setup: check-deps clean
-# brew uninstall --force python@$(PYTHON_VERSION) || true
-	brew install python@$(PYTHON_VERSION) postgresql@$(PG_VERSION) || brew upgrade python@$(PYTHON_VERSION) postgresql@$(PG_VERSION)
-#brew install python@$(PYTHON_VERSION)
-	brew link --force python@$(PYTHON_VERSION)
-##python$(PYTHON_VERSION)  -m pip install --user --upgrade pip
-	python$(PYTHON_VERSION) -m venv $(VENV_NAME)
+# System packages setup
+	setup: check-deps clean
+	sudo apt-get update
+	sudo apt-get install -y python$(PYTHON_VERSION) python3-pip postgresql-$(PG_VERSION)
+	python3 -m venv $(VENV_NAME)
 	. $(VENV_NAME)/bin/activate && python3 -m pip install --upgrade pip wheel setuptools
 	. $(VENV_NAME)/bin/activate && PYTHONPATH=$(PWD) pip install $(BASE_REQUIREMENTS)
-	python$(PYTHON_VERSION)  -m pip install --user --upgrade pip
-	brew services start postgresql@$(PG_VERSION)
+	sudo systemctl start postgresql
 
 # Development environment setup
 dev-setup: setup
@@ -47,8 +43,8 @@ dev-setup: setup
 
 # Database initialization
 init-db:
-	brew services start postgresql@$(PG_VERSION)
-	createdb supplychain_db || true
+	sudo systemctl start postgresql
+	sudo -u postgres createdb supplychain_db || true
 	test -f alembic.ini || (. $(VENV_NAME)/bin/activate && alembic init migrations)		
 	. $(VENV_NAME)/bin/activate && alembic upgrade head
 
@@ -58,11 +54,11 @@ start:
 
 # Stop services
 stop:
-	brew services stop postgresql@$(PG_VERSION)
+	sudo systemctl stop postgresql
 
 # Clean environment
 clean:
-	brew services stop postgresql@$(PG_VERSION)
+	sudo systemctl stop postgresql || true
 	deactivate || true
 	rm -rf $(VENV_NAME)
 	find . -type d -name __pycache__ -exec rm -r {} +

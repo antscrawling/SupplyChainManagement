@@ -121,6 +121,7 @@ async def create_customers_batch(customers: List[CustomerProfile]):
 
 @app.get("/customers/{company_name}")
 async def get_customer(company_name: str):
+    #if company_name in 
     if company_name not in onboarding_service.customers:
         raise HTTPException(
             status_code=404,

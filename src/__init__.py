@@ -35,4 +35,7 @@ __all__ = [
     'CustomerType',
     'OnboardingStatus',
     'CustomerProfile',
+    
+    #datafile
+    'customer.json'
 ]

@@ -1,0 +1,9 @@
+{
+"id" : "1000001111",
+"customer_id" : 1000000,
+"order_date" : "2025-03-31T12:00:00",
+"total_amount" : 123456.65,
+"status" : "completed",
+"created_at" : "2025-03-31T12:00:00",
+"updated_at" : "2025-03-31T12:00:00"
+}

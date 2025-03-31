@@ -21,7 +21,8 @@ BASE_REQUIREMENTS := \
 	psycopg2-binary==2.9.9 \
 	pydantic[email]==2.4.2 \
 	email-validator==2.1.0 \
-	python-multipart==0.0.6
+	python-multipart==0.0.6 \
+	requests==2.31.0
 
 DEV_REQUIREMENTS := \
 	pytest==7.4.3 \
@@ -35,7 +36,7 @@ setup: check-deps clean
 	brew link --force python@$(PYTHON_VERSION)
 	python$(PYTHON_VERSION) -m venv $(VENV_NAME)
 	. $(VENV_NAME)/bin/activate && pip install --upgrade pip wheel setuptools
-	. $(VENV_NAME)/bin/activate && pip install $(BASE_REQUIREMENTS)
+	. $(VENV_NAME)/bin/activate && PYTHONPATH=$(PWD) pip install $(BASE_REQUIREMENTS)
 	brew services start postgresql@$(PG_VERSION)
 
 # Development environment setup

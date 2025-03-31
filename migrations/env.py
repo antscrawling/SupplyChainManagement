@@ -5,11 +5,11 @@ from alembic import context
 import os
 import sys
 
-# Add the project root directory to Python path
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+# Add the `src` directory to the Python path
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
 
 # Import your models
-from ..src.models import Base
+from src.database import Base  # Import Base from database.py
 
 # this is the Alembic Config object
 config = context.config
@@ -19,11 +19,12 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Set the SQLAlchemy URL in the alembic.ini file
-config.set_main_option('sqlalchemy.url', 'postgresql://localhost/supplychain_db')
+config.set_main_option('sqlalchemy.url', 'postgresql://postgres:postgres@localhost/supplychain_db')
 
 target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
+    """Run migrations in 'offline' mode."""
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -36,6 +37,7 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 def run_migrations_online() -> None:
+    """Run migrations in 'online' mode."""
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

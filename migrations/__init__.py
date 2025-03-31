@@ -1,1 +1,5 @@
-"""Database migrations for Supply Chain Management System."""
+# This file marks the `migrations` directory as a Python package.
+
+
+
+

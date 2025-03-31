@@ -1,22 +1,25 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime, Enum, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from src.database import Base  # Import Base from database.py
+from .CustomerOnboarding import CustomerType, OnboardingStatus
+
+Base = declarative_base()
 
 class Customer(Base):
     __tablename__ = "customers"
 
     id = Column(Integer, primary_key=True, index=True)
-    company_name = Column(String, nullable=False)
-    customer_type = Column(String, nullable=False)
-    tax_id = Column(String, unique=True, nullable=False)
+    company_name = Column(String(100), unique=True, index=True, nullable=False)
+    customer_type = Column(Enum(CustomerType), nullable=False)
+    tax_id = Column(String(20), unique=True, nullable=False)
     registration_date = Column(DateTime, default=datetime.utcnow)
-    contact_email = Column(String, nullable=False)
-    contact_phone = Column(String, nullable=False)
-    address = Column(String, nullable=False)
-    credit_score = Column(Float, nullable=False)
-    approved_credit_limit = Column(Float, nullable=False)
-    onboarding_status = Column(String, nullable=False)
+    contact_email = Column(String(100), nullable=False)
+    contact_phone = Column(String(20), nullable=False)
+    address = Column(String(200), nullable=False)
+    credit_score = Column(Float)
+    approved_credit_limit = Column(Float)
+    onboarding_status = Column(Enum(OnboardingStatus), default=OnboardingStatus.PENDING)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

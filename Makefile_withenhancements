@@ -1,17 +1,26 @@
 .PHONY: setup dev-setup start stop clean test migrate init-db check-deps check-venv check-db setup-python
 
+
+
 # System dependencies versions
 PYTHON_VERSION := 3.11
+PG_VERSION := 14
 VENV_NAME := .venv
 
 # Check system dependencies
 check-deps:
-	@which python$(PYTHON_VERSION) > /dev/null || (echo "Python $(PYTHON_VERSION) is not installed. Please install it first."; exit 1)
+	@which brew > /dev/null || (echo "Installing Homebrew..." && /bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)")
+	@which rustc > /dev/null || (echo "Installing Rust..." && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh)
+	@source "$$HOME/.cargo/env" || true
 
 # Ensure Python 3.11 is installed and linked
 setup-python:
 	@echo "Setting up Python $(PYTHON_VERSION)..."
-	python$(PYTHON_VERSION) --version || (echo "Python $(PYTHON_VERSION) is not installed. Please install it first."; exit 1)
+	@brew update
+	@brew reinstall python@$(PYTHON_VERSION)
+	@brew upgrade 
+	@brew link python@$(PYTHON_VERSION)
+	@brew upgrade 
 
 # Check if virtual environment exists
 check-venv:
@@ -19,13 +28,12 @@ check-venv:
 		echo "Virtual environment not found. Run 'make setup' first."; \
 		exit 1; \
 	fi
-
 # Check if database exists
 check-db:
 	@echo "Checking if database 'supplychain_db' exists..."
 	@if ! psql -lqt | cut -d \| -f 1 | grep -qw supplychain_db; then \
-		echo "Database 'supplychain_db' does not exist. Run 'make init-db' to create it."; \
-		exit 1; \
+		echo "Database 'supplychain_db' does not exist. Running 'make init-db'..."; \
+		$(MAKE) init-db; \
 	else \
 		echo "Database 'supplychain_db' exists."; \
 	fi
@@ -38,26 +46,35 @@ BASE_REQUIREMENTS := \
 	sqlalchemy==2.0.23 \
 	alembic==1.12.1 \
 	psycopg2-binary==2.9.9 \
-	pydantic==2.8.0 \
-	pydantic[email]==2.8.0 \
+	pydantic[email]==2.4.2 \
+	email-validator==2.1.0 \
 	python-multipart==0.0.6 \
-	requests==2.31.0 \
-	httpx==0.28.1
+	requests==2.31.0
 
 DEV_REQUIREMENTS := \
-	coverage==6.5.0 \
 	pytest==7.4.3 \
 	pytest-cov==4.1.0 \
 	black==23.10.1 \
 	flake8==6.1.0 \
-	httpx==0.28.1
+	unittest==3.8.0 \
+	coverage==6.5.0
 
 # System packages setup
 setup: check-deps setup-python
 	@echo "Setting up the environment..."
 	python$(PYTHON_VERSION) -m venv $(VENV_NAME)
-	. $(VENV_NAME)/bin/activate && pip3 install --upgrade pip wheel setuptools
-	. $(VENV_NAME)/bin/activate && PYTHONPATH=$(PWD) pip3 install $(BASE_REQUIREMENTS)
+	@if [ ! -d "$(VENV_NAME)" ]; then \
+		echo "Error: Virtual environment was not created. Exiting."; \
+		exit 1; \
+	fi
+	@echo "Installing Python dependencies..."
+	@if [ ! -f "$(VENV_NAME)/bin/pip" ]; then \
+		echo "pip not found. Installing pip manually..."; \
+		curl -sSL https://bootstrap.pypa.io/get-pip.py | . $(VENV_NAME)/bin/python; \
+	fi
+	. $(VENV_NAME)/bin/activate && pip install --upgrade pip wheel setuptools
+	. $(VENV_NAME)/bin/activate && PYTHONPATH=$(PWD) pip install $(BASE_REQUIREMENTS)
+	brew services start postgresql@$(PG_VERSION)
 	$(MAKE) check-db  # Check if the database exists and initialize if necessary
 	$(MAKE) migrate   # Run migrations after setup
 	@echo "Environment setup complete."
@@ -67,11 +84,12 @@ setup: check-deps setup-python
 # Development environment setup
 dev-setup: setup
 	@echo "Setting up the development environment..."
-	. $(VENV_NAME)/bin/activate && pip3 install $(DEV_REQUIREMENTS)
+	. $(VENV_NAME)/bin/activate && pip install $(DEV_REQUIREMENTS)
 
 # Database initialization
 init-db:
 	@echo "Initializing the database..."
+	brew services start postgresql@$(PG_VERSION)
 	createdb supplychain_db || true
 	test -f alembic.ini || (. $(VENV_NAME)/bin/activate && alembic init migrations)
 	. $(VENV_NAME)/bin/activate && alembic upgrade head
@@ -84,18 +102,20 @@ start: check-venv
 # Stop services
 stop:
 	@echo "Stopping services..."
-	@echo "No services to stop. Ensure your database is managed externally."
+	brew services stop postgresql@$(PG_VERSION)
 
 # Clean environment
 clean:
 	@echo "Cleaning the environment..."
+	brew services stop postgresql@$(PG_VERSION) || true
+	deactivate 2>/dev/null || true
 	rm -rf $(VENV_NAME)
-
+	find . -type d -name __pycache__ -exec rm -r {} +
 
 # Run tests
-test: dev-setup
+test:
 	@echo "Running tests..."
-	PYTHONPATH=$(PWD) . $(VENV_NAME)/bin/activate  && pytest
+	. $(VENV_NAME)/bin/activate && pytest
 
 # Database migrations
 migrate: check-venv

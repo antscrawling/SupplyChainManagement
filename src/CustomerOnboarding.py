@@ -86,8 +86,15 @@ class CustomerOnboarding:
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
+
+
+def create_app():
+    app = FastAPI()
+    # Add routes and other configurations here
+    return app
+
 # Function to create and return the FastAPI app
-def create_app() -> FastAPI:
+def xcreate_app() -> FastAPI:
     app = FastAPI(title="Supply Chain Customer Onboarding API")
     onboarding_service = CustomerOnboarding()
 

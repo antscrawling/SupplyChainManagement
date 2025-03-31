@@ -1,9 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
 from src.CustomerOnboarding import create_app
+from fastapi import FastAPI
 
 # Create the app instance for testing
-app = create_app()
+app = FastAPI()
 client = TestClient(app)
 
 def test_create_customer():

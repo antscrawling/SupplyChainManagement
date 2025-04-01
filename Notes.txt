@@ -1,0 +1,24 @@
+
+
+Build the Docker Image: Build the image with a tag:
+
+docker build -t supplychain .
+
+docker run -p 8080:8080 supplychain
+
+--\
+tests are below steps
+docker run --rm supplychain-dev pytest tests/
+
+docker build --target test -t supplychain-test .
+docker run --rm supplychain-test
+
+docker run --rm supplychain-dev pytest tests/
+
+-------
+
+building the image in docker
+docker build -t supplychain-dev .
+
+to run the tests
+./run_docker_tests.sh

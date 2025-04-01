@@ -7,7 +7,11 @@ alembic==1.12.1
 psycopg2-binary==2.9.9
 python-dotenv==1.0.0
 pydantic==1.10.12
+<<<<<<< HEAD
 pydantic[email] ==1.10.12
+=======
+pydantic[email] ==2.8.0
+>>>>>>> a1d143e1c480edae69f397583da1f2bc3fd3a21a
 pytest==7.4.3
 httpx==0.25.1
 requests==2.31.0

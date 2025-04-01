@@ -7,6 +7,8 @@ import shutil
 import os
 from pathlib import Path
 
+app = xcreate_app()
+
 class CustomerType(str, Enum):
     MANUFACTURER = "manufacturer"
     DISTRIBUTOR = "distributor"
@@ -234,3 +236,15 @@ def xcreate_app() -> FastAPI:
         )
 
     return app
+
+def main():
+    app = xcreate_app()
+    return app
+# Run the app using uvicorn
+# uvicorn src.CustomerOnboarding:main --reload
+# To run the app, use the command:  
+
+
+
+#if __name__ == "__main__":
+#    main()

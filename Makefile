@@ -59,7 +59,7 @@ setup: check-deps setup-python
 	python$(PYTHON_VERSION) -m venv $(VENV_NAME)
 	. $(VENV_NAME)/bin/activate && pip3 install --upgrade pip wheel setuptools
 	. $(VENV_NAME)/bin/activate && PYTHONPATH=$(PWD) pip3 install $(BASE_REQUIREMENTS)
-	$(MAKE) check-db  # Check if the database exists and initialize if necessary
+	$(MAKE) init-db  # Check if the database exists and initialize if necessary
 	$(MAKE) migrate   # Run migrations after setup
 	@echo "Environment setup complete."
 	@echo "To activate the virtual environment, run: source $(VENV_NAME)/bin/activate"

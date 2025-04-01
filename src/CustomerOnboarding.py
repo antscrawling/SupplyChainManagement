@@ -7,6 +7,13 @@ import shutil
 import os
 from pathlib import Path
 
+# Create a global variable for the app but don't initialize it yet
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Supply Chain Management API"}
+
 class CustomerType(str, Enum):
     MANUFACTURER = "manufacturer"
     DISTRIBUTOR = "distributor"
@@ -25,7 +32,7 @@ class CustomerProfile(BaseModel):
     tax_id: constr(min_length=1, max_length=20)
     registration_date: datetime
     contact_email: EmailStr
-    contact_phone: constr(pattern=r'^\+?1?\d{9,15}$')
+    contact_phone: constr(regex=r'^\+?1?\d{9,15}$')  # Use regex instead of pattern
     address: constr(min_length=1, max_length=200)
     credit_score: Optional[float] = Field(None, ge=0, le=1850)
     approved_credit_limit: Optional[float] = Field(None, ge=0)
@@ -86,8 +93,6 @@ class CustomerOnboarding:
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-
-
 def create_app():
     app = FastAPI()
     # Add routes and other configurations here
@@ -97,10 +102,6 @@ def create_app():
 def xcreate_app() -> FastAPI:
     app = FastAPI(title="Supply Chain Customer Onboarding API")
     onboarding_service = CustomerOnboarding()
-
-    @app.get("/")
-    def read_root():
-        return {"message": "Welcome to Customer Onboarding API"}
 
     @app.post("/customers/", status_code=status.HTTP_201_CREATED)
     async def create_customer(customer: CustomerProfile):
@@ -234,3 +235,12 @@ def xcreate_app() -> FastAPI:
         )
 
     return app
+
+# Initialize the app after the function is defined
+app = xcreate_app()
+
+def main():
+    return app
+
+# Run the app using uvicorn
+# uvicorn src.CustomerOnboarding:app --reload

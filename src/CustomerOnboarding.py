@@ -7,7 +7,8 @@ import shutil
 import os
 from pathlib import Path
 
-app = xcreate_app()
+# Create a global variable for the app but don't initialize it yet
+app = None
 
 class CustomerType(str, Enum):
     MANUFACTURER = "manufacturer"
@@ -87,8 +88,6 @@ class CustomerOnboarding:
 # Create uploads directory if it doesn't exist
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
-
-
 
 def create_app():
     app = FastAPI()
@@ -237,14 +236,11 @@ def xcreate_app() -> FastAPI:
 
     return app
 
+# Initialize the app after the function is defined
+app = xcreate_app()
+
 def main():
-    app = xcreate_app()
     return app
+
 # Run the app using uvicorn
-# uvicorn src.CustomerOnboarding:main --reload
-# To run the app, use the command:  
-
-
-
-#if __name__ == "__main__":
-#    main()
+# uvicorn src.CustomerOnboarding:app --reload

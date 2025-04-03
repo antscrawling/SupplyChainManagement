@@ -1,0 +1,443 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.11, pytest-7.4.3, pluggy-1.5.0
+rootdir: /app
+plugins: anyio-3.7.1, cov-4.1.0
+collected 17 items
+
+tests/test_customer_onboarding.py FFFFFFFFFFFF                           [ 70%]
+tests/test_orders.py FFFFF                                               [100%]
+
+=================================== FAILURES ===================================
+_____________________________ test_create_customer _____________________________
+
+    def test_create_customer():
+        unique_name = generate_unique_name("Test Company")
+        payload = {
+            "company_name": unique_name,
+            "customer_type": "manufacturer",
+            "tax_id": "TX123456999",
+            "registration_date": "2025-03-31T12:00:00",
+            "contact_email": "test@company.com",
+            "contact_phone": "+1234567890",
+            "address": "123 Test St",
+            "credit_score": 800,
+            "approved_credit_limit": 500000.0,
+            "status": "pending"
+        }
+        response = client.post("/customers/", json=payload)
+>       assert response.status_code == 201
+E       assert 404 == 201
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_customer_onboarding.py:35: AssertionError
+_________________________ test_create_customers_batch __________________________
+
+    def test_create_customers_batch():
+        unique_name_1 = generate_unique_name("Batch Company 1")
+        unique_name_2 = generate_unique_name("Batch Company 2")
+        payload = [
+            {
+                "company_name": unique_name_1,
+                "customer_type": "supplier",
+                "tax_id": "TX123456888",
+                "registration_date": "2025-03-31T12:00:00",
+                "contact_email": "batch1@company.com",
+                "contact_phone": "+1234567891",
+                "address": "123 Batch St",
+                "credit_score": 750,
+                "approved_credit_limit": 300000.0,
+                "status": "pending"
+            },
+            {
+                "company_name": unique_name_2,
+                "customer_type": "retailer",
+                "tax_id": "TX123456777",
+                "registration_date": "2025-03-31T12:00:00",
+                "contact_email": "batch2@company.com",
+                "contact_phone": "+1234567892",
+                "address": "456 Batch St",
+                "credit_score": 700,
+                "approved_credit_limit": 200000.0,
+                "status": "pending"
+            }
+        ]
+        response = client.post("/customers/batch", json=payload)
+>       assert response.status_code == 201
+E       assert 404 == 201
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_customer_onboarding.py:67: AssertionError
+_________________ test_create_customers_batch_with_duplicates __________________
+
+    def test_create_customers_batch_with_duplicates():
+        unique_name = generate_unique_name("Duplicate Company")
+        payload = [
+            {
+                "company_name": unique_name,
+                "customer_type": "supplier",
+                "tax_id": "TX123456888",
+                "registration_date": "2025-03-31T12:00:00",
+                "contact_email": "batch1@company.com",
+                "contact_phone": "+1234567891",
+                "address": "123 Batch St",
+                "credit_score": 750,
+                "approved_credit_limit": 300000.0,
+                "status": "pending"
+            },
+            {
+                "company_name": unique_name,
+                "customer_type": "retailer",
+                "tax_id": "TX123456777",
+                "registration_date": "2025-03-31T12:00:00",
+                "contact_email": "batch2@company.com",
+                "contact_phone": "+1234567892",
+                "address": "456 Batch St",
+                "credit_score": 700,
+                "approved_credit_limit": 200000.0,
+                "status": "pending"
+            }
+        ]
+        response = client.post("/customers/batch", json=payload)
+>       assert response.status_code == 400
+E       assert 404 == 400
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_customer_onboarding.py:98: AssertionError
+______________________________ test_get_customer _______________________________
+
+    def test_get_customer():
+        unique_name = generate_unique_name("Test Company")
+        payload = {
+            "company_name": unique_name,
+            "customer_type": "manufacturer",
+            "tax_id": "TX123456999",
+            "registration_date": "2025-03-31T12:00:00",
+            "contact_email": "test@company.com",
+            "contact_phone": "+1234567890",
+            "address": "123 Test St",
+            "credit_score": 800,
+            "approved_credit_limit": 500000.0,
+            "status": "pending"
+        }
+        client.post("/customers/", json=payload)
+        response = client.get(f"/customers/{unique_name}")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_customer_onboarding.py:117: AssertionError
+________________________ test_get_non_existent_customer ________________________
+
+    def test_get_non_existent_customer():
+        unique_name = generate_unique_name("NonExistent Company")
+        response = client.get(f"/customers/{unique_name}")
+        assert response.status_code == 404
+>       assert response.json()["detail"] == "Customer not found"
+E       AssertionError: assert 'Not Found' == 'Customer not found'
+E         - Customer not found
+E         + Not Found
+
+tests/test_customer_onboarding.py:123: AssertionError
+_____________________________ test_list_customers ______________________________
+
+    def test_list_customers():
+        unique_name_1 = generate_unique_name("Batch Company 1")
+        unique_name_2 = generate_unique_name("Batch Company 2")
+        payload = [
+            {
+                "company_name": unique_name_1,
+                "customer_type": "supplier",
+                "tax_id": "TX123456888",
+                "registration_date": "2025-03-31T12:00:00",
+                "contact_email": "batch1@company.com",
+                "contact_phone": "+1234567891",
+                "address": "123 Batch St",
+                "credit_score": 750,
+                "approved_credit_limit": 300000.0,
+                "status": "pending"
+            },
+            {
+                "company_name": unique_name_2,
+                "customer_type": "retailer",
+                "tax_id": "TX123456777",
+                "registration_date": "2025-03-31T12:00:00",
+                "contact_email": "batch2@company.com",
+                "contact_phone": "+1234567892",
+                "address": "456 Batch St",
+                "credit_score": 700,
+                "approved_credit_limit": 200000.0,
+                "status": "pending"
+            }
+        ]
+        client.post("/customers/batch", json=payload)
+        response = client.get("/customers/")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_customer_onboarding.py:156: AssertionError
+__________________________ test_list_customers_empty ___________________________
+
+    def test_list_customers_empty():
+        response = client.get("/customers/")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_customer_onboarding.py:161: AssertionError
+______________________________ test_update_status ______________________________
+
+    def test_update_status():
+        unique_name = generate_unique_name("Test Company")
+        payload = {
+            "company_name": unique_name,
+            "customer_type": "manufacturer",
+            "tax_id": "TX123456999",
+            "registration_date": "2025-03-31T12:00:00",
+            "contact_email": "test@company.com",
+            "contact_phone": "+1234567890",
+            "address": "123 Test St",
+            "credit_score": 800,
+            "approved_credit_limit": 500000.0,
+            "status": "pending"
+        }
+        client.post("/customers/", json=payload)
+        update_payload = {"status": "completed"}
+        response = client.put(f"/customers/{unique_name}/status", json=update_payload)
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_customer_onboarding.py:181: AssertionError
+___________________ test_update_status_non_existent_customer ___________________
+
+    def test_update_status_non_existent_customer():
+        unique_name = generate_unique_name("NonExistent Company")
+        update_payload = {"status": "completed"}
+        response = client.put(f"/customers/{unique_name}/status", json=update_payload)
+        assert response.status_code == 404
+>       assert response.json()["detail"] == "Customer not found"
+E       AssertionError: assert 'Not Found' == 'Customer not found'
+E         - Customer not found
+E         + Not Found
+
+tests/test_customer_onboarding.py:188: AssertionError
+_______________________ test_update_status_invalid_value _______________________
+
+    def test_update_status_invalid_value():
+        unique_name = generate_unique_name("Test Company")
+        payload = {
+            "company_name": unique_name,
+            "customer_type": "manufacturer",
+            "tax_id": "TX123456999",
+            "registration_date": "2025-03-31T12:00:00",
+            "contact_email": "test@company.com",
+            "contact_phone": "+1234567890",
+            "address": "123 Test St",
+            "credit_score": 800,
+            "approved_credit_limit": 500000.0,
+            "status": "pending"
+        }
+        client.post("/customers/", json=payload)
+    
+        # Attempt to update the status with an invalid value
+        update_payload = {"status": "invalid_status"}
+        response = client.put(f"/customers/{unique_name}/status", json=update_payload)
+>       assert response.status_code == 422
+E       assert 404 == 422
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_customer_onboarding.py:209: AssertionError
+__________________________ test_get_pending_customers __________________________
+
+    def test_get_pending_customers():
+        unique_name_1 = generate_unique_name("Batch Company 1")
+        unique_name_2 = generate_unique_name("Batch Company 2")
+        payload = [
+            {
+                "company_name": unique_name_1,
+                "customer_type": "supplier",
+                "tax_id": "TX123456888",
+                "registration_date": "2025-03-31T12:00:00",
+                "contact_email": "batch1@company.com",
+                "contact_phone": "+1234567891",
+                "address": "123 Batch St",
+                "credit_score": 750,
+                "approved_credit_limit": 300000.0,
+                "status": "pending"
+            },
+            {
+                "company_name": unique_name_2,
+                "customer_type": "retailer",
+                "tax_id": "TX123456777",
+                "registration_date": "2025-03-31T12:00:00",
+                "contact_email": "batch2@company.com",
+                "contact_phone": "+1234567892",
+                "address": "456 Batch St",
+                "credit_score": 700,
+                "approved_credit_limit": 200000.0,
+                "status": "pending"
+            }
+        ]
+        client.post("/customers/batch", json=payload)
+        response = client.get("/customers/pending/")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_customer_onboarding.py:242: AssertionError
+________________________ test_create_duplicate_customer ________________________
+
+    def test_create_duplicate_customer():
+        unique_name = generate_unique_name("Test Company")
+        payload = {
+            "company_name": unique_name,
+            "customer_type": "manufacturer",
+            "tax_id": "TX123456999",
+            "registration_date": "2025-03-31T12:00:00",
+            "contact_email": "test@company.com",
+            "contact_phone": "+1234567890",
+            "address": "123 Test St",
+            "credit_score": 800,
+            "approved_credit_limit": 500000.0,
+            "status": "pending"
+        }
+        # Create the first customer
+        response = client.post("/customers/", json=payload)
+>       assert response.status_code == 201
+E       assert 404 == 201
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_customer_onboarding.py:261: AssertionError
+______________________________ test_create_order _______________________________
+
+    def test_create_order():
+        create_customer()
+        order_payload = {
+            "order_id": "ORD001",
+            "company_name": "Order Co",
+            "product": "Widgets",
+            "quantity": 100,
+            "price_per_unit": 15.5,
+            "order_date": "2025-04-01T15:00:00"
+        }
+        response = client.post("/orders/", json=order_payload)
+>       assert response.status_code == 201
+E       assert 404 == 201
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_orders.py:51: AssertionError
+________________________________ test_get_order ________________________________
+
+    def test_get_order():
+        create_customer()
+        order_payload = {
+            "order_id": "ORD002",
+            "company_name": "Order Co",
+            "product": "Gadgets",
+            "quantity": 50,
+            "price_per_unit": 20.0,
+            "order_date": "2025-04-02T10:00:00"
+        }
+        client.post("/orders/", json=order_payload)
+        response = client.get("/orders/ORD002")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_orders.py:65: AssertionError
+_______________________________ test_list_orders _______________________________
+
+    def test_list_orders():
+        create_customer()
+        orders = [
+            {
+                "order_id": "ORD003",
+                "company_name": "Order Co",
+                "product": "Thingamajigs",
+                "quantity": 200,
+                "price_per_unit": 5.0,
+                "order_date": "2025-04-03T11:00:00"
+            },
+            {
+                "order_id": "ORD004",
+                "company_name": "Order Co",
+                "product": "Doodads",
+                "quantity": 75,
+                "price_per_unit": 12.0,
+                "order_date": "2025-04-04T09:30:00"
+            }
+        ]
+        for order in orders:
+            client.post("/orders/", json=order)
+    
+        response = client.get("/orders/")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_orders.py:92: AssertionError
+______________________________ test_update_order _______________________________
+
+    def test_update_order():
+        create_customer()
+        order_payload = {
+            "order_id": "ORD005",
+            "company_name": "Order Co",
+            "product": "Widgets",
+            "quantity": 100,
+            "price_per_unit": 10.0,
+            "order_date": "2025-04-05T14:00:00"
+        }
+        client.post("/orders/", json=order_payload)
+    
+        update_payload = {
+            "product": "Updated Widgets",
+            "quantity": 150,
+            "price_per_unit": 12.5
+        }
+        response = client.put("/orders/ORD005", json=update_payload)
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_orders.py:113: AssertionError
+______________________________ test_delete_order _______________________________
+
+    def test_delete_order():
+        create_customer()
+        order_payload = {
+            "order_id": "ORD006",
+            "company_name": "Order Co",
+            "product": "Removable",
+            "quantity": 30,
+            "price_per_unit": 25.0,
+            "order_date": "2025-04-06T13:00:00"
+        }
+        client.post("/orders/", json=order_payload)
+        response = client.delete("/orders/ORD006")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/test_orders.py:132: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_customer_onboarding.py::test_create_customer - assert 404 =...
+FAILED tests/test_customer_onboarding.py::test_create_customers_batch - asser...
+FAILED tests/test_customer_onboarding.py::test_create_customers_batch_with_duplicates
+FAILED tests/test_customer_onboarding.py::test_get_customer - assert 404 == 200
+FAILED tests/test_customer_onboarding.py::test_get_non_existent_customer - As...
+FAILED tests/test_customer_onboarding.py::test_list_customers - assert 404 ==...
+FAILED tests/test_customer_onboarding.py::test_list_customers_empty - assert ...
+FAILED tests/test_customer_onboarding.py::test_update_status - assert 404 == 200
+FAILED tests/test_customer_onboarding.py::test_update_status_non_existent_customer
+FAILED tests/test_customer_onboarding.py::test_update_status_invalid_value - ...
+FAILED tests/test_customer_onboarding.py::test_get_pending_customers - assert...
+FAILED tests/test_customer_onboarding.py::test_create_duplicate_customer - as...
+FAILED tests/test_orders.py::test_create_order - assert 404 == 201
+FAILED tests/test_orders.py::test_get_order - assert 404 == 200
+FAILED tests/test_orders.py::test_list_orders - assert 404 == 200
+FAILED tests/test_orders.py::test_update_order - assert 404 == 200
+FAILED tests/test_orders.py::test_delete_order - assert 404 == 200
+============================== 17 failed in 0.61s ==============================
+joseibay@MacBookAir SupplyChainManagement % 

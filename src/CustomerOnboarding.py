@@ -1,250 +1,212 @@
+from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
+from typing import List
 from datetime import datetime
-from typing import Optional, List, Dict
-from enum import Enum
-from fastapi import FastAPI, HTTPException, status, File, UploadFile
-from pydantic import BaseModel, EmailStr, Field, constr
-import shutil
+from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey
+from sqlalchemy.orm import declarative_base, Session, relationship
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from fastapi import FastAPI
 import os
-from pathlib import Path
 
-# Create a global variable for the app but don't initialize it yet
-<<<<<<< HEAD
-app = FastAPI()
+print("Current working directory:", os.getcwd())
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the Supply Chain Management API"}
-=======
-app = None
->>>>>>> a1d143e1c480edae69f397583da1f2bc3fd3a21a
+# Use an absolute path for the database
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'test.db')}"
 
-class CustomerType(str, Enum):
-    MANUFACTURER = "manufacturer"
-    DISTRIBUTOR = "distributor"
-    RETAILER = "retailer"
-    SUPPLIER = "supplier"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
-class OnboardingStatus(str, Enum):
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    REJECTED = "rejected"
+# Define the APIRouter
+router = APIRouter(
+    prefix="/customers",
+    tags=["Customers"]
+)
 
-class CustomerProfile(BaseModel):
-    company_name: constr(min_length=1, max_length=100)
-    customer_type: CustomerType
-    tax_id: constr(min_length=1, max_length=20)
-    registration_date: datetime
-    contact_email: EmailStr
-    contact_phone: constr(regex=r'^\+?1?\d{9,15}$')  # Use regex instead of pattern
-    address: constr(min_length=1, max_length=200)
-    credit_score: Optional[float] = Field(None, ge=0, le=1850)
-    approved_credit_limit: Optional[float] = Field(None, ge=0)
+# SQLAlchemy setup
+Base = declarative_base()
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "company_name": "ABC Manufacturing",
-                "customer_type": "manufacturer",
-                "tax_id": "123456789",
-                "registration_date": "2025-03-29T12:00:00",
-                "contact_email": "contact@abc.com",
-                "contact_phone": "+1234567890",
-                "address": "123 Business St",
-                "credit_score": 750,
-                "approved_credit_limit": 100000.0
-            }
-        }
+# Define the CustomerModel
+class CustomerModel(Base):
+    __tablename__ = "customers"
 
-class CustomerResponse(BaseModel):
-    id: int
+    company_name = Column(String, primary_key=True, index=True)
+    customer_type = Column(String)
+    tax_id = Column(String)
+    registration_date = Column(DateTime)
+    contact_email = Column(String)
+    contact_phone = Column(String)
+    address = Column(String)
+    credit_score = Column(Integer)
+    approved_credit_limit = Column(Float)
+    status = Column(String, default="pending")
+
+# Define the Order model
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(String, ForeignKey("customers.company_name"))
+    order_date = Column(DateTime, default=datetime.utcnow)
+    total_amount = Column(Float)
+    status = Column(String, default="pending")
+    items = relationship("OrderItem", back_populates="order")
+
+# Define the OrderItem model
+class OrderItem(Base):
+    __tablename__ = "order_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    product_name = Column(String)
+    quantity = Column(Integer)
+    unit_price = Column(Float)
+    order = relationship("Order", back_populates="items")
+
+# Create the database tables
+Base.metadata.create_all(bind=engine)
+print("Database tables created successfully.")
+
+# Define the Pydantic models
+class Customer(BaseModel):
     company_name: str
+    customer_type: str
     tax_id: str
-    customer_type: CustomerType
     registration_date: datetime
-    contact_email: EmailStr
+    contact_email: str
     contact_phone: str
     address: str
-    credit_score: Optional[float]
-    approved_credit_limit: Optional[float]
-    onboarding_status: OnboardingStatus
-    created_at: datetime
-    updated_at: datetime
+    credit_score: int
+    approved_credit_limit: float
+    status: str = "pending"
 
-class DocumentType(str, Enum):
-    TAX_CERTIFICATE = "tax_certificate"
-    BUSINESS_LICENSE = "business_license"
-    CREDIT_REPORT = "credit_report"
-    BANK_STATEMENT = "bank_statement"
+    class Config:
+        orm_mode = True
 
-class DocumentStatus(str, Enum):
-    PENDING = "pending"
-    VERIFIED = "verified"
-    REJECTED = "rejected"
+class StatusUpdate(BaseModel):
+    status: str
 
-class Document(BaseModel):
-    document_type: DocumentType
-    file_name: str
-    upload_date: datetime = Field(default_factory=datetime.utcnow)
-    status: DocumentStatus = DocumentStatus.PENDING
+class OrderItemCreate(BaseModel):
+    product_name: str
+    quantity: int
+    unit_price: float
 
-class CustomerOnboarding:
-    def __init__(self):
-        self.customers: Dict[str, CustomerProfile] = {}
-        self.onboarding_status: Dict[str, OnboardingStatus] = {}
+class OrderCreate(BaseModel):
+    customer_id: str
+    items: List[OrderItemCreate]
 
-# Create uploads directory if it doesn't exist
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
+class OrderResponse(BaseModel):
+    id: int
+    customer_id: str
+    order_date: datetime
+    total_amount: float
+    status: str
+    items: List[OrderItemCreate]
 
-def create_app():
-    app = FastAPI()
-    # Add routes and other configurations here
-    return app
+    class Config:
+        orm_mode = True
 
-# Function to create and return the FastAPI app
-def xcreate_app() -> FastAPI:
-    app = FastAPI(title="Supply Chain Customer Onboarding API")
-    onboarding_service = CustomerOnboarding()
+# Dependency to get the database session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-    @app.post("/customers/", status_code=status.HTTP_201_CREATED)
-    async def create_customer(customer: CustomerProfile):
-        if customer.company_name in onboarding_service.customers:
-            raise HTTPException(
-                status_code=400,
-                detail="Customer with this company name already exists"
-            )
-        
-        onboarding_service.customers[customer.company_name] = customer
-        onboarding_service.onboarding_status[customer.company_name] = OnboardingStatus.PENDING
-        return {"message": "Customer onboarding initiated", "customer": customer}
+# Define the endpoints
+@router.post("/", status_code=201)
+def create_customer(customer: Customer, db: Session = Depends(get_db)):
+    db_customer = CustomerModel(**customer.dict())
+    db.add(db_customer)
+    db.commit()
+    return {"message": "Customer created successfully"}
 
-    @app.post("/customers/batch", status_code=status.HTTP_201_CREATED)
-    async def create_customers_batch(customers: List[CustomerProfile]):
-        created_customers = []
-        for customer in customers:
-            if customer.company_name in onboarding_service.customers:
-                continue
-            
-            onboarding_service.customers[customer.company_name] = customer
-            onboarding_service.onboarding_status[customer.company_name] = OnboardingStatus.PENDING
-            created_customers.append(customer)
-        
-        return {
-            "message": f"Created {len(created_customers)} customers",
-            "customers": created_customers
-        }
-
-    @app.get("/customers/{company_name}")
-    async def get_customer(company_name: str):
-        if company_name not in onboarding_service.customers:
-            raise HTTPException(
-                status_code=404,
-                detail="Customer not found"
-            )
-        return onboarding_service.customers[company_name]
-
-    @app.get("/customers/")
-    async def list_customers():
-        return list(onboarding_service.customers.values())
-
-    @app.put("/customers/{company_name}/status")
-    async def update_status(company_name: str, status: OnboardingStatus):
-        if company_name not in onboarding_service.onboarding_status:
-            raise HTTPException(
-                status_code=404,
-                detail="Customer not found"
-            )
-        onboarding_service.onboarding_status[company_name] = status
-        return {"message": f"Status updated to {status}"}
-
-    @app.get("/customers/pending/")
-    async def get_pending_customers():
-        return [
-            company_name for company_name, status in onboarding_service.onboarding_status.items()
-            if status == OnboardingStatus.PENDING
-        ]
-
-    @app.post("/customers/{company_name}/documents/")
-    async def upload_document(
-        company_name: str,
-        document_type: DocumentType,
-        file: UploadFile = File(...),
-    ):
-        if company_name not in onboarding_service.customers:
-            raise HTTPException(
-                status_code=404,
-                detail="Customer not found"
-            )
-        
-        # Create customer directory if it doesn't exist
-        customer_dir = UPLOAD_DIR / company_name
-        customer_dir.mkdir(exist_ok=True)
-        
-        # Save file
-        file_path = customer_dir / f"{document_type}_{file.filename}"
-        with file_path.open("wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
-        # Create document record
-        document = Document(
-            document_type=document_type,
-            file_name=file_path.name,
-        )
-        
-        # Add to customer's documents
-        if not hasattr(onboarding_service.customers[company_name], 'documents'):
-            onboarding_service.customers[company_name].documents = []
-        onboarding_service.customers[company_name].documents.append(document)
-        
-        return {
-            "message": "Document uploaded successfully",
-            "document": document
-        }
-
-    @app.get("/customers/{company_name}/documents/")
-    async def list_documents(company_name: str):
-        if company_name not in onboarding_service.customers:
-            raise HTTPException(
-                status_code=404,
-                detail="Customer not found"
-            )
-        
-        customer = onboarding_service.customers[company_name]
-        return getattr(customer, 'documents', [])
-
-    @app.put("/customers/{company_name}/documents/{document_type}/verify")
-    async def verify_document(
-        company_name: str,
-        document_type: DocumentType,
-        status: DocumentStatus
-    ):
-        if company_name not in onboarding_service.customers:
-            raise HTTPException(
-                status_code=404,
-                detail="Customer not found"
-            )
-        
-        customer = onboarding_service.customers[company_name]
-        documents = getattr(customer, 'documents', [])
-        
-        for doc in documents:
-            if doc.document_type == document_type:
-                doc.status = status
-                return {"message": f"Document status updated to {status}"}
-        
+@router.post("/batch", status_code=201)
+def create_customers_batch(customers: List[Customer], db: Session = Depends(get_db)):
+    existing_names = {cust.company_name for cust in db.query(CustomerModel).all()}
+    duplicates = [cust.company_name for cust in customers if cust.company_name in existing_names]
+    if duplicates:
         raise HTTPException(
-            status_code=404,
-            detail=f"Document of type {document_type} not found"
+            status_code=400,
+            detail=f"Duplicate company names found: {', '.join(duplicates)}"
         )
+    db_customers = [CustomerModel(**cust.dict()) for cust in customers]
+    db.add_all(db_customers)
+    db.commit()
+    return {"message": f"{len(customers)} customers created successfully"}
 
-    return app
+@router.get("/{company_name}")
+def get_customer(company_name: str, db: Session = Depends(get_db)):
+    customer = db.query(CustomerModel).filter(CustomerModel.company_name == company_name).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return customer
 
-# Initialize the app after the function is defined
-app = xcreate_app()
+@router.get("/")
+def list_customers(db: Session = Depends(get_db)):
+    return db.query(CustomerModel).all()
 
-def main():
-    return app
+@router.put("/{company_name}/status")
+def update_customer_status(company_name: str, update: StatusUpdate, db: Session = Depends(get_db)):
+    customer = db.query(CustomerModel).filter(CustomerModel.company_name == company_name).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    customer.status = update.status
+    db.commit()
+    return {"message": "Status updated successfully"}
 
-# Run the app using uvicorn
-# uvicorn src.CustomerOnboarding:app --reload
+@router.get("/pending/")
+def get_pending_customers(db: Session = Depends(get_db)):
+    return db.query(CustomerModel).filter(CustomerModel.status == "pending").all()
+
+@router.get("/completed/")
+def get_pending_customers(db: Session = Depends(get_db)):
+    return db.query(CustomerModel).filter(CustomerModel.status == "completed").all()
+
+@router.post("/", response_model=OrderResponse)
+async def create_order(order: OrderCreate, db: Session = Depends(get_db)):
+    # Calculate total amount
+    total_amount = sum(item.quantity * item.unit_price for item in order.items)
+    
+    # Create the Order object
+    db_order = Order(
+        customer_id=order.customer_id,
+        total_amount=total_amount,
+        status="pending"
+    )
+    db.add(db_order)
+    db.flush()  # Flush to get the order ID
+    
+    # Create OrderItem objects
+    db_items = []
+    for item in order.items:
+        db_item = OrderItem(
+            order_id=db_order.id,
+            product_name=item.product_name,
+            quantity=item.quantity,
+            unit_price=item.unit_price
+        )
+        db.add(db_item)
+        db_items.append(db_item)
+    
+    db.commit()
+    db.refresh(db_order)
+
+    # Return the response
+    return {
+        "id": db_order.id,
+        "customer_id": db_order.customer_id,
+        "order_date": db_order.order_date,
+        "total_amount": db_order.total_amount,
+        "status": db_order.status,
+        "items": [
+            {
+                "product_name": item.product_name,
+                "quantity": item.quantity,
+                "unit_price": item.unit_price
+            }
+            for item in db_items
+        ]
+    }

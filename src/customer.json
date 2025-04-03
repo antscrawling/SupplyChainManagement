@@ -10,7 +10,7 @@
     "address": "123 Banking St, Singapore 123456",
     "credit_score": 1667,
     "approved_credit_limit": 20000000.00,
-    "onboarding_status": "pending",
+    "status": "pending",
     "created_at": "2025-03-31T12:00:00",
     "updated_at": "2025-03-31T12:00:00"
   },
@@ -25,7 +25,7 @@
     "address": "456 Trading Rd, Singapore 654321",
     "credit_score": 600,
     "approved_credit_limit": 500000.00,
-    "onboarding_status": "completed",
+    "status": "completed",
     "created_at": "2025-03-31T12:00:00",
     "updated_at": "2025-03-31T12:00:00"
   },
@@ -40,7 +40,7 @@
     "address": "456 Trading Rd, Singapore 654328",
     "credit_score": 600,
     "approved_credit_limit": 500000.00,
-    "onboarding_status": "completed",
+    "status": "in_progress",
     "created_at": "2025-03-31T12:00:00",
     "updated_at": "2025-03-31T12:00:00"
   },
@@ -55,7 +55,7 @@
     "address": "12 Sunview Rd, Singapore 627615",
     "credit_score": 780,
     "approved_credit_limit": 1500000.00,
-    "onboarding_status": "in_progress",
+    "status": "rejected",
     "created_at": "2025-03-31T12:00:00",
     "updated_at": "2025-03-31T12:00:00"
   },

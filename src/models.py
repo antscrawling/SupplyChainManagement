@@ -1,66 +1,56 @@
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy.orm import relationship, declarative_base
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, DateTime, Enum, ForeignKey
-from sqlalchemy.orm import relationship
-from src.database import Base  # Import Base from database.py
 
+Base = declarative_base()
+
+# Customer Model
 class Customer(Base):
     __tablename__ = "customers"
 
     id = Column(Integer, primary_key=True, index=True)
-    company_name = Column(String, nullable=False)
-    customer_type = Column(String, nullable=False)
-    tax_id = Column(String, unique=True, nullable=False)
+    company_name = Column(String, unique=True, index=True)
+    customer_type = Column(String)
+    tax_id = Column(String)
     registration_date = Column(DateTime, default=datetime.utcnow)
-    contact_email = Column(String, nullable=False)
-    contact_phone = Column(String, nullable=False)
-    address = Column(String, nullable=False)
-    credit_score = Column(Float, nullable=False)
-    approved_credit_limit = Column(Float, nullable=False)
-    onboarding_status = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    contact_email = Column(String)
+    contact_phone = Column(String)
+    address = Column(String)
+    credit_score = Column(Integer)
+    approved_credit_limit = Column(Float)
+    status = Column(String, default="pending")
 
-    # Relationships
-    orders = relationship("Order", back_populates="customer")
-    documents = relationship("Document", back_populates="customer")
-
+# Order Model
 class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, ForeignKey("customers.id"))
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
     order_date = Column(DateTime, default=datetime.utcnow)
     total_amount = Column(Float, nullable=False)
-    status = Column(String(50), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    status = Column(String, default="pending")
 
-    # Relationships
-    customer = relationship("Customer", back_populates="orders")
     items = relationship("OrderItem", back_populates="order")
 
+# OrderItem Model
 class OrderItem(Base):
     __tablename__ = "order_items"
 
     id = Column(Integer, primary_key=True, index=True)
-    order_id = Column(Integer, ForeignKey("orders.id"))
-    product_name = Column(String(100), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
+    product_name = Column(String, nullable=False)
     quantity = Column(Integer, nullable=False)
     unit_price = Column(Float, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
-    # Relationships
     order = relationship("Order", back_populates="items")
 
+# Document Model
 class Document(Base):
     __tablename__ = "documents"
 
     id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, ForeignKey("customers.id"))
-    document_type = Column(String(50), nullable=False)
-    file_path = Column(String(255), nullable=False)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
+    document_type = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)
     upload_date = Column(DateTime, default=datetime.utcnow)
-    status = Column(String(50), nullable=False)
-    
-    # Relationships
-    customer = relationship("Customer", back_populates="documents")
+    status = Column(String, default="pending")

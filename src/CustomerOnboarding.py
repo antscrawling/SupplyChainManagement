@@ -2,18 +2,29 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, Float, DateTime
-from sqlalchemy.orm import declarative_base, Session
+from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey
+from sqlalchemy.orm import declarative_base, Session, relationship
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi import FastAPI
+import os
+
+print("Current working directory:", os.getcwd())
+
+# Use an absolute path for the database
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'test.db')}"
+
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 # Define the APIRouter
-router = APIRouter()
+router = APIRouter(
+    prefix="/customers",
+    tags=["Customers"]
+)
 
 # SQLAlchemy setup
 Base = declarative_base()
-engine = create_engine("sqlite:///./test.db", connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Define the CustomerModel
@@ -31,8 +42,31 @@ class CustomerModel(Base):
     approved_credit_limit = Column(Float)
     status = Column(String, default="pending")
 
+# Define the Order model
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(String, ForeignKey("customers.company_name"))
+    order_date = Column(DateTime, default=datetime.utcnow)
+    total_amount = Column(Float)
+    status = Column(String, default="pending")
+    items = relationship("OrderItem", back_populates="order")
+
+# Define the OrderItem model
+class OrderItem(Base):
+    __tablename__ = "order_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    product_name = Column(String)
+    quantity = Column(Integer)
+    unit_price = Column(Float)
+    order = relationship("Order", back_populates="items")
+
 # Create the database tables
 Base.metadata.create_all(bind=engine)
+print("Database tables created successfully.")
 
 # Define the Pydantic models
 class Customer(BaseModel):
@@ -52,6 +86,26 @@ class Customer(BaseModel):
 
 class StatusUpdate(BaseModel):
     status: str
+
+class OrderItemCreate(BaseModel):
+    product_name: str
+    quantity: int
+    unit_price: float
+
+class OrderCreate(BaseModel):
+    customer_id: str
+    items: List[OrderItemCreate]
+
+class OrderResponse(BaseModel):
+    id: int
+    customer_id: str
+    order_date: datetime
+    total_amount: float
+    status: str
+    items: List[OrderItemCreate]
+
+    class Config:
+        orm_mode = True
 
 # Dependency to get the database session
 def get_db():
@@ -106,3 +160,53 @@ def update_customer_status(company_name: str, update: StatusUpdate, db: Session 
 @router.get("/pending/")
 def get_pending_customers(db: Session = Depends(get_db)):
     return db.query(CustomerModel).filter(CustomerModel.status == "pending").all()
+
+@router.get("/completed/")
+def get_pending_customers(db: Session = Depends(get_db)):
+    return db.query(CustomerModel).filter(CustomerModel.status == "completed").all()
+
+@router.post("/", response_model=OrderResponse)
+async def create_order(order: OrderCreate, db: Session = Depends(get_db)):
+    # Calculate total amount
+    total_amount = sum(item.quantity * item.unit_price for item in order.items)
+    
+    # Create the Order object
+    db_order = Order(
+        customer_id=order.customer_id,
+        total_amount=total_amount,
+        status="pending"
+    )
+    db.add(db_order)
+    db.flush()  # Flush to get the order ID
+    
+    # Create OrderItem objects
+    db_items = []
+    for item in order.items:
+        db_item = OrderItem(
+            order_id=db_order.id,
+            product_name=item.product_name,
+            quantity=item.quantity,
+            unit_price=item.unit_price
+        )
+        db.add(db_item)
+        db_items.append(db_item)
+    
+    db.commit()
+    db.refresh(db_order)
+
+    # Return the response
+    return {
+        "id": db_order.id,
+        "customer_id": db_order.customer_id,
+        "order_date": db_order.order_date,
+        "total_amount": db_order.total_amount,
+        "status": db_order.status,
+        "items": [
+            {
+                "product_name": item.product_name,
+                "quantity": item.quantity,
+                "unit_price": item.unit_price
+            }
+            for item in db_items
+        ]
+    }

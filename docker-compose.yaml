@@ -1,0 +1,19 @@
+version: '3.9'
+services:
+  app:
+    build:
+      context: .
+      target: app
+    ports:
+      - "8080:8080"
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8080 --reload
+    environment:
+      - ENV=development
+
+  test:
+    build:
+      context: .
+      target: test
+    depends_on:
+      - app
+    command: ["pytest", "tests/"]

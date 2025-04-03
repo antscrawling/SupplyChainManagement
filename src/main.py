@@ -4,7 +4,9 @@ import logging
 from dotenv import load_dotenv
 from pathlib import Path
 from fastapi import FastAPI
-from src.endpoint import api_router
+#from src.CustomerOnboarding import router  # Import the router from CustomerOnboarding
+from src.CustomerOnboarding import router  # Import the router from masterendpoint
+from CustomerOnboarding import router  # Import the router from CustomerOnboarding
 
 # Load environment variables
 env_path = Path(__file__).parent.parent / '.env'
@@ -20,8 +22,9 @@ logger = logging.getLogger(__name__)
 # Create the FastAPI app object
 app = FastAPI()
 
-# Include the central API router
-app.include_router(api_router)
+# Include the router
+app.include_router(router)
+
 
 if __name__ == "__main__":
-    uvicorn.run("src.main:app", host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run("app", host="0.0.0.0", port=8080, reload=True)

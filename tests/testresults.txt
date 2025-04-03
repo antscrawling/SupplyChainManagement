@@ -1,0 +1,1075 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2821
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\csgray\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs22 \cf2 \CocoaLigature0  docker run supplychain-test\
+============================= test session starts ==============================\
+platform linux -- Python 3.11.11, pytest-7.4.3, pluggy-1.5.0\
+rootdir: /app\
+plugins: anyio-3.7.1, cov-4.1.0\
+collected 6 items\
+\
+tests/test_customer_onboarding.py ..FFFF                                 [100%]\
+\
+=================================== FAILURES ===================================\
+______________________________ test_get_customer _______________________________\
+\
+self = <sqlalchemy.engine.base.Connection object at 0xffffabbf69d0>\
+dialect = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffabbf5050>\
+statement = <sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0xffffabbe23d0>\
+parameters = [('Test Company3', 'manufacturer', 'TX123456999', '2025-03-31 12:00:00.000000', 'test@company.com', '+1234567890', ...)]\
+\
+    def _exec_single_context(\
+        self,\
+        dialect: Dialect,\
+        context: ExecutionContext,\
+        statement: Union[str, Compiled],\
+        parameters: Optional[_AnyMultiExecuteParams],\
+    ) -> CursorResult[Any]:\
+        """continue the _execute_context() method for a single DBAPI\
+        cursor.execute() or cursor.executemany() call.\
+    \
+        """\
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:\
+            generic_setinputsizes = context._prepare_set_input_sizes()\
+    \
+            if generic_setinputsizes:\
+                try:\
+                    dialect.do_set_input_sizes(\
+                        context.cursor, generic_setinputsizes, context\
+                    )\
+                except BaseException as e:\
+                    self._handle_dbapi_exception(\
+                        e, str(statement), parameters, None, context\
+                    )\
+    \
+        cursor, str_statement, parameters = (\
+            context.cursor,\
+            context.statement,\
+            context.parameters,\
+        )\
+    \
+        effective_parameters: Optional[_AnyExecuteParams]\
+    \
+        if not context.executemany:\
+            effective_parameters = parameters[0]\
+        else:\
+            effective_parameters = parameters\
+    \
+        if self._has_events or self.engine._has_events:\
+            for fn in self.dispatch.before_cursor_execute:\
+                str_statement, effective_parameters = fn(\
+                    self,\
+                    cursor,\
+                    str_statement,\
+                    effective_parameters,\
+                    context,\
+                    context.executemany,\
+                )\
+    \
+        if self._echo:\
+            self._log_info(str_statement)\
+    \
+            stats = context._get_cache_stats()\
+    \
+            if not self.engine.hide_parameters:\
+                self._log_info(\
+                    "[%s] %r",\
+                    stats,\
+                    sql_util._repr_params(\
+                        effective_parameters,\
+                        batches=10,\
+                        ismulti=context.executemany,\
+                    ),\
+                )\
+            else:\
+                self._log_info(\
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",\
+                    stats,\
+                )\
+    \
+        evt_handled: bool = False\
+        try:\
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:\
+                effective_parameters = cast(\
+                    "_CoreMultiExecuteParams", effective_parameters\
+                )\
+                if self.dialect._has_events:\
+                    for fn in self.dialect.dispatch.do_executemany:\
+                        if fn(\
+                            cursor,\
+                            str_statement,\
+                            effective_parameters,\
+                            context,\
+                        ):\
+                            evt_handled = True\
+                            break\
+                if not evt_handled:\
+                    self.dialect.do_executemany(\
+                        cursor,\
+                        str_statement,\
+                        effective_parameters,\
+                        context,\
+                    )\
+            elif not effective_parameters and context.no_parameters:\
+                if self.dialect._has_events:\
+                    for fn in self.dialect.dispatch.do_execute_no_params:\
+                        if fn(cursor, str_statement, context):\
+                            evt_handled = True\
+                            break\
+                if not evt_handled:\
+                    self.dialect.do_execute_no_params(\
+                        cursor, str_statement, context\
+                    )\
+            else:\
+                effective_parameters = cast(\
+                    "_CoreSingleExecuteParams", effective_parameters\
+                )\
+                if self.dialect._has_events:\
+                    for fn in self.dialect.dispatch.do_execute:\
+                        if fn(\
+                            cursor,\
+                            str_statement,\
+                            effective_parameters,\
+                            context,\
+                        ):\
+                            evt_handled = True\
+                            break\
+                if not evt_handled:\
+>                   self.dialect.do_execute(\
+                        cursor, str_statement, effective_parameters, context\
+                    )\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1969: \
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+\
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+cursor = <sqlite3.Cursor object at 0xffffab181440>\
+statement = 'INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'\
+parameters = ('Test Company3', 'manufacturer', 'TX123456999', '2025-03-31 12:00:00.000000', 'test@company.com', '+1234567890', ...)\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffabbf5050>\
+\
+    def do_execute(self, cursor, statement, parameters, context=None):\
+>       cursor.execute(statement, parameters)\
+E       sqlite3.IntegrityError: UNIQUE constraint failed: customers.company_name\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py:922: IntegrityError\
+\
+The above exception was the direct cause of the following exception:\
+\
+    def test_get_customer():\
+>       test_create_customer()\
+\
+tests/test_customer_onboarding.py:54: \
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+tests/test_customer_onboarding.py:20: in test_create_customer\
+    response = client.post("/customers/", json=payload)\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:590: in post\
+    return super().post(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:1132: in post\
+    return self.request(\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:465: in request\
+    return super().request(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:814: in request\
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:901: in send\
+    response = self._send_handling_auth(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:929: in _send_handling_auth\
+    response = self._send_handling_redirects(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:966: in _send_handling_redirects\
+    response = self._send_single_request(request)\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:1002: in _send_single_request\
+    response = transport.handle_request(request)\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:342: in handle_request\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:339: in handle_request\
+    portal.call(self.app, scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/anyio/from_thread.py:277: in call\
+    return cast(T_Retval, self.start_task_soon(func, *args).result())\
+/usr/local/lib/python3.11/concurrent/futures/_base.py:456: in result\
+    return self.__get_result()\
+/usr/local/lib/python3.11/concurrent/futures/_base.py:401: in __get_result\
+    raise self._exception\
+/usr/local/lib/python3.11/site-packages/anyio/from_thread.py:217: in _call_func\
+    retval = await retval\
+/usr/local/lib/python3.11/site-packages/fastapi/applications.py:1106: in __call__\
+    await super().__call__(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/applications.py:122: in __call__\
+    await self.middleware_stack(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py:184: in __call__\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py:162: in __call__\
+    await self.app(scope, receive, _send)\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py:79: in __call__\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py:68: in __call__\
+    await self.app(scope, receive, sender)\
+/usr/local/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py:20: in __call__\
+    raise e\
+/usr/local/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py:17: in __call__\
+    await self.app(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:718: in __call__\
+    await route.handle(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:276: in handle\
+    await self.app(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:66: in app\
+    response = await func(request)\
+/usr/local/lib/python3.11/site-packages/fastapi/routing.py:274: in app\
+    raw_response = await run_endpoint_function(\
+/usr/local/lib/python3.11/site-packages/fastapi/routing.py:193: in run_endpoint_function\
+    return await run_in_threadpool(dependant.call, **values)\
+/usr/local/lib/python3.11/site-packages/starlette/concurrency.py:41: in run_in_threadpool\
+    return await anyio.to_thread.run_sync(func, *args)\
+/usr/local/lib/python3.11/site-packages/anyio/to_thread.py:33: in run_sync\
+    return await get_asynclib().run_sync_in_worker_thread(\
+/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py:877: in run_sync_in_worker_thread\
+    return await future\
+/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py:807: in run\
+    result = context.run(func, *args)\
+src/CustomerOnboarding.py:62: in create_customer\
+    db.commit()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1969: in commit\
+    trans.commit(_to_root=True)\
+<string>:2: in commit\
+    ???\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py:139: in _go\
+    ret_value = fn(self, *arg, **kw)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1256: in commit\
+    self._prepare_impl()\
+<string>:2: in _prepare_impl\
+    ???\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py:139: in _go\
+    ret_value = fn(self, *arg, **kw)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1231: in _prepare_impl\
+    self.session.flush()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4312: in flush\
+    self._flush(objects)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4447: in _flush\
+    with util.safe_reraise():\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py:146: in __exit__\
+    raise exc_value.with_traceback(exc_tb)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4408: in _flush\
+    flush_context.execute()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute\
+    rec.execute(self)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute\
+    util.preloaded.orm_persistence.save_obj(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj\
+    _emit_insert_statements(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py:1043: in _emit_insert_statements\
+    result = connection.execute(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1416: in execute\
+    return meth(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py:516: in _execute_on_connection\
+    return connection._execute_clauseelement(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1639: in _execute_clauseelement\
+    ret = self._execute_context(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1848: in _execute_context\
+    return self._exec_single_context(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1988: in _exec_single_context\
+    self._handle_dbapi_exception(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:2343: in _handle_dbapi_exception\
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1969: in _exec_single_context\
+    self.dialect.do_execute(\
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+\
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+cursor = <sqlite3.Cursor object at 0xffffab181440>\
+statement = 'INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'\
+parameters = ('Test Company3', 'manufacturer', 'TX123456999', '2025-03-31 12:00:00.000000', 'test@company.com', '+1234567890', ...)\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffabbf5050>\
+\
+    def do_execute(self, cursor, statement, parameters, context=None):\
+>       cursor.execute(statement, parameters)\
+E       sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: customers.company_name\
+E       [SQL: INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\
+E       [parameters: ('Test Company3', 'manufacturer', 'TX123456999', '2025-03-31 12:00:00.000000', 'test@company.com', '+1234567890', '123 Test St', 800, 500000.0, 'pending')]\
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py:922: IntegrityError\
+_____________________________ test_list_customers ______________________________\
+\
+self = <sqlalchemy.engine.base.Connection object at 0xffffa9127210>\
+dialect = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffa9127510>\
+statement = <sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0xffffab1f10d0>\
+parameters = [('Batch Company 19', 'supplier', 'TX123456888', '2025-03-31 12:00:00.000000', 'batch1@company.com', '+1234567891', .....'Batch Company 29', 'retailer', 'TX123456777', '2025-03-31 12:00:00.000000', 'batch2@company.com', '+1234567892', ...)]\
+\
+    def _exec_single_context(\
+        self,\
+        dialect: Dialect,\
+        context: ExecutionContext,\
+        statement: Union[str, Compiled],\
+        parameters: Optional[_AnyMultiExecuteParams],\
+    ) -> CursorResult[Any]:\
+        """continue the _execute_context() method for a single DBAPI\
+        cursor.execute() or cursor.executemany() call.\
+    \
+        """\
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:\
+            generic_setinputsizes = context._prepare_set_input_sizes()\
+    \
+            if generic_setinputsizes:\
+                try:\
+                    dialect.do_set_input_sizes(\
+                        context.cursor, generic_setinputsizes, context\
+                    )\
+                except BaseException as e:\
+                    self._handle_dbapi_exception(\
+                        e, str(statement), parameters, None, context\
+                    )\
+    \
+        cursor, str_statement, parameters = (\
+            context.cursor,\
+            context.statement,\
+            context.parameters,\
+        )\
+    \
+        effective_parameters: Optional[_AnyExecuteParams]\
+    \
+        if not context.executemany:\
+            effective_parameters = parameters[0]\
+        else:\
+            effective_parameters = parameters\
+    \
+        if self._has_events or self.engine._has_events:\
+            for fn in self.dispatch.before_cursor_execute:\
+                str_statement, effective_parameters = fn(\
+                    self,\
+                    cursor,\
+                    str_statement,\
+                    effective_parameters,\
+                    context,\
+                    context.executemany,\
+                )\
+    \
+        if self._echo:\
+            self._log_info(str_statement)\
+    \
+            stats = context._get_cache_stats()\
+    \
+            if not self.engine.hide_parameters:\
+                self._log_info(\
+                    "[%s] %r",\
+                    stats,\
+                    sql_util._repr_params(\
+                        effective_parameters,\
+                        batches=10,\
+                        ismulti=context.executemany,\
+                    ),\
+                )\
+            else:\
+                self._log_info(\
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",\
+                    stats,\
+                )\
+    \
+        evt_handled: bool = False\
+        try:\
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:\
+                effective_parameters = cast(\
+                    "_CoreMultiExecuteParams", effective_parameters\
+                )\
+                if self.dialect._has_events:\
+                    for fn in self.dialect.dispatch.do_executemany:\
+                        if fn(\
+                            cursor,\
+                            str_statement,\
+                            effective_parameters,\
+                            context,\
+                        ):\
+                            evt_handled = True\
+                            break\
+                if not evt_handled:\
+>                   self.dialect.do_executemany(\
+                        cursor,\
+                        str_statement,\
+                        effective_parameters,\
+                        context,\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1938: \
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+\
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+cursor = <sqlite3.Cursor object at 0xffffa897cf40>\
+statement = 'INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'\
+parameters = [('Batch Company 19', 'supplier', 'TX123456888', '2025-03-31 12:00:00.000000', 'batch1@company.com', '+1234567891', .....'Batch Company 29', 'retailer', 'TX123456777', '2025-03-31 12:00:00.000000', 'batch2@company.com', '+1234567892', ...)]\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffa9127510>\
+\
+    def do_executemany(self, cursor, statement, parameters, context=None):\
+>       cursor.executemany(statement, parameters)\
+E       sqlite3.IntegrityError: UNIQUE constraint failed: customers.company_name\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py:919: IntegrityError\
+\
+The above exception was the direct cause of the following exception:\
+\
+    def test_list_customers():\
+>       test_create_customers_batch()\
+\
+tests/test_customer_onboarding.py:59: \
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+tests/test_customer_onboarding.py:50: in test_create_customers_batch\
+    response = client.post("/customers/batch", json=payload)\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:590: in post\
+    return super().post(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:1132: in post\
+    return self.request(\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:465: in request\
+    return super().request(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:814: in request\
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:901: in send\
+    response = self._send_handling_auth(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:929: in _send_handling_auth\
+    response = self._send_handling_redirects(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:966: in _send_handling_redirects\
+    response = self._send_single_request(request)\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:1002: in _send_single_request\
+    response = transport.handle_request(request)\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:342: in handle_request\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:339: in handle_request\
+    portal.call(self.app, scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/anyio/from_thread.py:277: in call\
+    return cast(T_Retval, self.start_task_soon(func, *args).result())\
+/usr/local/lib/python3.11/concurrent/futures/_base.py:456: in result\
+    return self.__get_result()\
+/usr/local/lib/python3.11/concurrent/futures/_base.py:401: in __get_result\
+    raise self._exception\
+/usr/local/lib/python3.11/site-packages/anyio/from_thread.py:217: in _call_func\
+    retval = await retval\
+/usr/local/lib/python3.11/site-packages/fastapi/applications.py:1106: in __call__\
+    await super().__call__(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/applications.py:122: in __call__\
+    await self.middleware_stack(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py:184: in __call__\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py:162: in __call__\
+    await self.app(scope, receive, _send)\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py:79: in __call__\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py:68: in __call__\
+    await self.app(scope, receive, sender)\
+/usr/local/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py:20: in __call__\
+    raise e\
+/usr/local/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py:17: in __call__\
+    await self.app(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:718: in __call__\
+    await route.handle(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:276: in handle\
+    await self.app(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:66: in app\
+    response = await func(request)\
+/usr/local/lib/python3.11/site-packages/fastapi/routing.py:274: in app\
+    raw_response = await run_endpoint_function(\
+/usr/local/lib/python3.11/site-packages/fastapi/routing.py:193: in run_endpoint_function\
+    return await run_in_threadpool(dependant.call, **values)\
+/usr/local/lib/python3.11/site-packages/starlette/concurrency.py:41: in run_in_threadpool\
+    return await anyio.to_thread.run_sync(func, *args)\
+/usr/local/lib/python3.11/site-packages/anyio/to_thread.py:33: in run_sync\
+    return await get_asynclib().run_sync_in_worker_thread(\
+/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py:877: in run_sync_in_worker_thread\
+    return await future\
+/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py:807: in run\
+    result = context.run(func, *args)\
+src/CustomerOnboarding.py:69: in create_customers_batch\
+    db.commit()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1969: in commit\
+    trans.commit(_to_root=True)\
+<string>:2: in commit\
+    ???\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py:139: in _go\
+    ret_value = fn(self, *arg, **kw)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1256: in commit\
+    self._prepare_impl()\
+<string>:2: in _prepare_impl\
+    ???\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py:139: in _go\
+    ret_value = fn(self, *arg, **kw)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1231: in _prepare_impl\
+    self.session.flush()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4312: in flush\
+    self._flush(objects)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4447: in _flush\
+    with util.safe_reraise():\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py:146: in __exit__\
+    raise exc_value.with_traceback(exc_tb)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4408: in _flush\
+    flush_context.execute()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute\
+    rec.execute(self)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute\
+    util.preloaded.orm_persistence.save_obj(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj\
+    _emit_insert_statements(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py:1043: in _emit_insert_statements\
+    result = connection.execute(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1416: in execute\
+    return meth(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py:516: in _execute_on_connection\
+    return connection._execute_clauseelement(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1639: in _execute_clauseelement\
+    ret = self._execute_context(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1848: in _execute_context\
+    return self._exec_single_context(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1988: in _exec_single_context\
+    self._handle_dbapi_exception(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:2343: in _handle_dbapi_exception\
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1938: in _exec_single_context\
+    self.dialect.do_executemany(\
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+\
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+cursor = <sqlite3.Cursor object at 0xffffa897cf40>\
+statement = 'INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'\
+parameters = [('Batch Company 19', 'supplier', 'TX123456888', '2025-03-31 12:00:00.000000', 'batch1@company.com', '+1234567891', .....'Batch Company 29', 'retailer', 'TX123456777', '2025-03-31 12:00:00.000000', 'batch2@company.com', '+1234567892', ...)]\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffa9127510>\
+\
+    def do_executemany(self, cursor, statement, parameters, context=None):\
+>       cursor.executemany(statement, parameters)\
+E       sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: customers.company_name\
+E       [SQL: INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\
+E       [parameters: [('Batch Company 19', 'supplier', 'TX123456888', '2025-03-31 12:00:00.000000', 'batch1@company.com', '+1234567891', '123 Batch St', 750, 300000.0, 'pending'), ('Batch Company 29', 'retailer', 'TX123456777', '2025-03-31 12:00:00.000000', 'batch2@company.com', '+1234567892', '456 Batch St', 700, 200000.0, 'pending')]]\
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py:919: IntegrityError\
+______________________________ test_update_status ______________________________\
+\
+self = <sqlalchemy.engine.base.Connection object at 0xffffa8b3c190>\
+dialect = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffa8b3c050>\
+statement = <sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0xffffabbe23d0>\
+parameters = [('Test Company3', 'manufacturer', 'TX123456999', '2025-03-31 12:00:00.000000', 'test@company.com', '+1234567890', ...)]\
+\
+    def _exec_single_context(\
+        self,\
+        dialect: Dialect,\
+        context: ExecutionContext,\
+        statement: Union[str, Compiled],\
+        parameters: Optional[_AnyMultiExecuteParams],\
+    ) -> CursorResult[Any]:\
+        """continue the _execute_context() method for a single DBAPI\
+        cursor.execute() or cursor.executemany() call.\
+    \
+        """\
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:\
+            generic_setinputsizes = context._prepare_set_input_sizes()\
+    \
+            if generic_setinputsizes:\
+                try:\
+                    dialect.do_set_input_sizes(\
+                        context.cursor, generic_setinputsizes, context\
+                    )\
+                except BaseException as e:\
+                    self._handle_dbapi_exception(\
+                        e, str(statement), parameters, None, context\
+                    )\
+    \
+        cursor, str_statement, parameters = (\
+            context.cursor,\
+            context.statement,\
+            context.parameters,\
+        )\
+    \
+        effective_parameters: Optional[_AnyExecuteParams]\
+    \
+        if not context.executemany:\
+            effective_parameters = parameters[0]\
+        else:\
+            effective_parameters = parameters\
+    \
+        if self._has_events or self.engine._has_events:\
+            for fn in self.dispatch.before_cursor_execute:\
+                str_statement, effective_parameters = fn(\
+                    self,\
+                    cursor,\
+                    str_statement,\
+                    effective_parameters,\
+                    context,\
+                    context.executemany,\
+                )\
+    \
+        if self._echo:\
+            self._log_info(str_statement)\
+    \
+            stats = context._get_cache_stats()\
+    \
+            if not self.engine.hide_parameters:\
+                self._log_info(\
+                    "[%s] %r",\
+                    stats,\
+                    sql_util._repr_params(\
+                        effective_parameters,\
+                        batches=10,\
+                        ismulti=context.executemany,\
+                    ),\
+                )\
+            else:\
+                self._log_info(\
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",\
+                    stats,\
+                )\
+    \
+        evt_handled: bool = False\
+        try:\
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:\
+                effective_parameters = cast(\
+                    "_CoreMultiExecuteParams", effective_parameters\
+                )\
+                if self.dialect._has_events:\
+                    for fn in self.dialect.dispatch.do_executemany:\
+                        if fn(\
+                            cursor,\
+                            str_statement,\
+                            effective_parameters,\
+                            context,\
+                        ):\
+                            evt_handled = True\
+                            break\
+                if not evt_handled:\
+                    self.dialect.do_executemany(\
+                        cursor,\
+                        str_statement,\
+                        effective_parameters,\
+                        context,\
+                    )\
+            elif not effective_parameters and context.no_parameters:\
+                if self.dialect._has_events:\
+                    for fn in self.dialect.dispatch.do_execute_no_params:\
+                        if fn(cursor, str_statement, context):\
+                            evt_handled = True\
+                            break\
+                if not evt_handled:\
+                    self.dialect.do_execute_no_params(\
+                        cursor, str_statement, context\
+                    )\
+            else:\
+                effective_parameters = cast(\
+                    "_CoreSingleExecuteParams", effective_parameters\
+                )\
+                if self.dialect._has_events:\
+                    for fn in self.dialect.dispatch.do_execute:\
+                        if fn(\
+                            cursor,\
+                            str_statement,\
+                            effective_parameters,\
+                            context,\
+                        ):\
+                            evt_handled = True\
+                            break\
+                if not evt_handled:\
+>                   self.dialect.do_execute(\
+                        cursor, str_statement, effective_parameters, context\
+                    )\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1969: \
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+\
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+cursor = <sqlite3.Cursor object at 0xffffaafb6bc0>\
+statement = 'INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'\
+parameters = ('Test Company3', 'manufacturer', 'TX123456999', '2025-03-31 12:00:00.000000', 'test@company.com', '+1234567890', ...)\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffa8b3c050>\
+\
+    def do_execute(self, cursor, statement, parameters, context=None):\
+>       cursor.execute(statement, parameters)\
+E       sqlite3.IntegrityError: UNIQUE constraint failed: customers.company_name\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py:922: IntegrityError\
+\
+The above exception was the direct cause of the following exception:\
+\
+    def test_update_status():\
+>       test_create_customer()\
+\
+tests/test_customer_onboarding.py:65: \
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+tests/test_customer_onboarding.py:20: in test_create_customer\
+    response = client.post("/customers/", json=payload)\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:590: in post\
+    return super().post(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:1132: in post\
+    return self.request(\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:465: in request\
+    return super().request(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:814: in request\
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:901: in send\
+    response = self._send_handling_auth(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:929: in _send_handling_auth\
+    response = self._send_handling_redirects(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:966: in _send_handling_redirects\
+    response = self._send_single_request(request)\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:1002: in _send_single_request\
+    response = transport.handle_request(request)\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:342: in handle_request\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:339: in handle_request\
+    portal.call(self.app, scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/anyio/from_thread.py:277: in call\
+    return cast(T_Retval, self.start_task_soon(func, *args).result())\
+/usr/local/lib/python3.11/concurrent/futures/_base.py:456: in result\
+    return self.__get_result()\
+/usr/local/lib/python3.11/concurrent/futures/_base.py:401: in __get_result\
+    raise self._exception\
+/usr/local/lib/python3.11/site-packages/anyio/from_thread.py:217: in _call_func\
+    retval = await retval\
+/usr/local/lib/python3.11/site-packages/fastapi/applications.py:1106: in __call__\
+    await super().__call__(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/applications.py:122: in __call__\
+    await self.middleware_stack(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py:184: in __call__\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py:162: in __call__\
+    await self.app(scope, receive, _send)\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py:79: in __call__\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py:68: in __call__\
+    await self.app(scope, receive, sender)\
+/usr/local/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py:20: in __call__\
+    raise e\
+/usr/local/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py:17: in __call__\
+    await self.app(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:718: in __call__\
+    await route.handle(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:276: in handle\
+    await self.app(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:66: in app\
+    response = await func(request)\
+/usr/local/lib/python3.11/site-packages/fastapi/routing.py:274: in app\
+    raw_response = await run_endpoint_function(\
+/usr/local/lib/python3.11/site-packages/fastapi/routing.py:193: in run_endpoint_function\
+    return await run_in_threadpool(dependant.call, **values)\
+/usr/local/lib/python3.11/site-packages/starlette/concurrency.py:41: in run_in_threadpool\
+    return await anyio.to_thread.run_sync(func, *args)\
+/usr/local/lib/python3.11/site-packages/anyio/to_thread.py:33: in run_sync\
+    return await get_asynclib().run_sync_in_worker_thread(\
+/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py:877: in run_sync_in_worker_thread\
+    return await future\
+/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py:807: in run\
+    result = context.run(func, *args)\
+src/CustomerOnboarding.py:62: in create_customer\
+    db.commit()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1969: in commit\
+    trans.commit(_to_root=True)\
+<string>:2: in commit\
+    ???\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py:139: in _go\
+    ret_value = fn(self, *arg, **kw)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1256: in commit\
+    self._prepare_impl()\
+<string>:2: in _prepare_impl\
+    ???\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py:139: in _go\
+    ret_value = fn(self, *arg, **kw)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1231: in _prepare_impl\
+    self.session.flush()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4312: in flush\
+    self._flush(objects)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4447: in _flush\
+    with util.safe_reraise():\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py:146: in __exit__\
+    raise exc_value.with_traceback(exc_tb)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4408: in _flush\
+    flush_context.execute()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute\
+    rec.execute(self)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute\
+    util.preloaded.orm_persistence.save_obj(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj\
+    _emit_insert_statements(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py:1043: in _emit_insert_statements\
+    result = connection.execute(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1416: in execute\
+    return meth(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py:516: in _execute_on_connection\
+    return connection._execute_clauseelement(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1639: in _execute_clauseelement\
+    ret = self._execute_context(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1848: in _execute_context\
+    return self._exec_single_context(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1988: in _exec_single_context\
+    self._handle_dbapi_exception(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:2343: in _handle_dbapi_exception\
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1969: in _exec_single_context\
+    self.dialect.do_execute(\
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+\
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+cursor = <sqlite3.Cursor object at 0xffffaafb6bc0>\
+statement = 'INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'\
+parameters = ('Test Company3', 'manufacturer', 'TX123456999', '2025-03-31 12:00:00.000000', 'test@company.com', '+1234567890', ...)\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffa8b3c050>\
+\
+    def do_execute(self, cursor, statement, parameters, context=None):\
+>       cursor.execute(statement, parameters)\
+E       sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: customers.company_name\
+E       [SQL: INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\
+E       [parameters: ('Test Company3', 'manufacturer', 'TX123456999', '2025-03-31 12:00:00.000000', 'test@company.com', '+1234567890', '123 Test St', 800, 500000.0, 'pending')]\
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py:922: IntegrityError\
+__________________________ test_get_pending_customers __________________________\
+\
+self = <sqlalchemy.engine.base.Connection object at 0xffffab0c4790>\
+dialect = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffab0c5050>\
+statement = <sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0xffffab1f10d0>\
+parameters = [('Batch Company 19', 'supplier', 'TX123456888', '2025-03-31 12:00:00.000000', 'batch1@company.com', '+1234567891', .....'Batch Company 29', 'retailer', 'TX123456777', '2025-03-31 12:00:00.000000', 'batch2@company.com', '+1234567892', ...)]\
+\
+    def _exec_single_context(\
+        self,\
+        dialect: Dialect,\
+        context: ExecutionContext,\
+        statement: Union[str, Compiled],\
+        parameters: Optional[_AnyMultiExecuteParams],\
+    ) -> CursorResult[Any]:\
+        """continue the _execute_context() method for a single DBAPI\
+        cursor.execute() or cursor.executemany() call.\
+    \
+        """\
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:\
+            generic_setinputsizes = context._prepare_set_input_sizes()\
+    \
+            if generic_setinputsizes:\
+                try:\
+                    dialect.do_set_input_sizes(\
+                        context.cursor, generic_setinputsizes, context\
+                    )\
+                except BaseException as e:\
+                    self._handle_dbapi_exception(\
+                        e, str(statement), parameters, None, context\
+                    )\
+    \
+        cursor, str_statement, parameters = (\
+            context.cursor,\
+            context.statement,\
+            context.parameters,\
+        )\
+    \
+        effective_parameters: Optional[_AnyExecuteParams]\
+    \
+        if not context.executemany:\
+            effective_parameters = parameters[0]\
+        else:\
+            effective_parameters = parameters\
+    \
+        if self._has_events or self.engine._has_events:\
+            for fn in self.dispatch.before_cursor_execute:\
+                str_statement, effective_parameters = fn(\
+                    self,\
+                    cursor,\
+                    str_statement,\
+                    effective_parameters,\
+                    context,\
+                    context.executemany,\
+                )\
+    \
+        if self._echo:\
+            self._log_info(str_statement)\
+    \
+            stats = context._get_cache_stats()\
+    \
+            if not self.engine.hide_parameters:\
+                self._log_info(\
+                    "[%s] %r",\
+                    stats,\
+                    sql_util._repr_params(\
+                        effective_parameters,\
+                        batches=10,\
+                        ismulti=context.executemany,\
+                    ),\
+                )\
+            else:\
+                self._log_info(\
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",\
+                    stats,\
+                )\
+    \
+        evt_handled: bool = False\
+        try:\
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:\
+                effective_parameters = cast(\
+                    "_CoreMultiExecuteParams", effective_parameters\
+                )\
+                if self.dialect._has_events:\
+                    for fn in self.dialect.dispatch.do_executemany:\
+                        if fn(\
+                            cursor,\
+                            str_statement,\
+                            effective_parameters,\
+                            context,\
+                        ):\
+                            evt_handled = True\
+                            break\
+                if not evt_handled:\
+>                   self.dialect.do_executemany(\
+                        cursor,\
+                        str_statement,\
+                        effective_parameters,\
+                        context,\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1938: \
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+\
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+cursor = <sqlite3.Cursor object at 0xffffab01c1c0>\
+statement = 'INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'\
+parameters = [('Batch Company 19', 'supplier', 'TX123456888', '2025-03-31 12:00:00.000000', 'batch1@company.com', '+1234567891', .....'Batch Company 29', 'retailer', 'TX123456777', '2025-03-31 12:00:00.000000', 'batch2@company.com', '+1234567892', ...)]\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffab0c5050>\
+\
+    def do_executemany(self, cursor, statement, parameters, context=None):\
+>       cursor.executemany(statement, parameters)\
+E       sqlite3.IntegrityError: UNIQUE constraint failed: customers.company_name\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py:919: IntegrityError\
+\
+The above exception was the direct cause of the following exception:\
+\
+    def test_get_pending_customers():\
+>       test_create_customers_batch()\
+\
+tests/test_customer_onboarding.py:71: \
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+tests/test_customer_onboarding.py:50: in test_create_customers_batch\
+    response = client.post("/customers/batch", json=payload)\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:590: in post\
+    return super().post(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:1132: in post\
+    return self.request(\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:465: in request\
+    return super().request(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:814: in request\
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:901: in send\
+    response = self._send_handling_auth(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:929: in _send_handling_auth\
+    response = self._send_handling_redirects(\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:966: in _send_handling_redirects\
+    response = self._send_single_request(request)\
+/usr/local/lib/python3.11/site-packages/httpx/_client.py:1002: in _send_single_request\
+    response = transport.handle_request(request)\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:342: in handle_request\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/testclient.py:339: in handle_request\
+    portal.call(self.app, scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/anyio/from_thread.py:277: in call\
+    return cast(T_Retval, self.start_task_soon(func, *args).result())\
+/usr/local/lib/python3.11/concurrent/futures/_base.py:456: in result\
+    return self.__get_result()\
+/usr/local/lib/python3.11/concurrent/futures/_base.py:401: in __get_result\
+    raise self._exception\
+/usr/local/lib/python3.11/site-packages/anyio/from_thread.py:217: in _call_func\
+    retval = await retval\
+/usr/local/lib/python3.11/site-packages/fastapi/applications.py:1106: in __call__\
+    await super().__call__(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/applications.py:122: in __call__\
+    await self.middleware_stack(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py:184: in __call__\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py:162: in __call__\
+    await self.app(scope, receive, _send)\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py:79: in __call__\
+    raise exc\
+/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py:68: in __call__\
+    await self.app(scope, receive, sender)\
+/usr/local/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py:20: in __call__\
+    raise e\
+/usr/local/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py:17: in __call__\
+    await self.app(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:718: in __call__\
+    await route.handle(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:276: in handle\
+    await self.app(scope, receive, send)\
+/usr/local/lib/python3.11/site-packages/starlette/routing.py:66: in app\
+    response = await func(request)\
+/usr/local/lib/python3.11/site-packages/fastapi/routing.py:274: in app\
+    raw_response = await run_endpoint_function(\
+/usr/local/lib/python3.11/site-packages/fastapi/routing.py:193: in run_endpoint_function\
+    return await run_in_threadpool(dependant.call, **values)\
+/usr/local/lib/python3.11/site-packages/starlette/concurrency.py:41: in run_in_threadpool\
+    return await anyio.to_thread.run_sync(func, *args)\
+/usr/local/lib/python3.11/site-packages/anyio/to_thread.py:33: in run_sync\
+    return await get_asynclib().run_sync_in_worker_thread(\
+/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py:877: in run_sync_in_worker_thread\
+    return await future\
+/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py:807: in run\
+    result = context.run(func, *args)\
+src/CustomerOnboarding.py:69: in create_customers_batch\
+    db.commit()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1969: in commit\
+    trans.commit(_to_root=True)\
+<string>:2: in commit\
+    ???\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py:139: in _go\
+    ret_value = fn(self, *arg, **kw)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1256: in commit\
+    self._prepare_impl()\
+<string>:2: in _prepare_impl\
+    ???\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py:139: in _go\
+    ret_value = fn(self, *arg, **kw)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:1231: in _prepare_impl\
+    self.session.flush()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4312: in flush\
+    self._flush(objects)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4447: in _flush\
+    with util.safe_reraise():\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py:146: in __exit__\
+    raise exc_value.with_traceback(exc_tb)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py:4408: in _flush\
+    flush_context.execute()\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute\
+    rec.execute(self)\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute\
+    util.preloaded.orm_persistence.save_obj(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj\
+    _emit_insert_statements(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py:1043: in _emit_insert_statements\
+    result = connection.execute(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1416: in execute\
+    return meth(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py:516: in _execute_on_connection\
+    return connection._execute_clauseelement(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1639: in _execute_clauseelement\
+    ret = self._execute_context(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1848: in _execute_context\
+    return self._exec_single_context(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1988: in _exec_single_context\
+    self._handle_dbapi_exception(\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:2343: in _handle_dbapi_exception\
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1938: in _exec_single_context\
+    self.dialect.do_executemany(\
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \
+\
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0xffffabb45090>\
+cursor = <sqlite3.Cursor object at 0xffffab01c1c0>\
+statement = 'INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'\
+parameters = [('Batch Company 19', 'supplier', 'TX123456888', '2025-03-31 12:00:00.000000', 'batch1@company.com', '+1234567891', .....'Batch Company 29', 'retailer', 'TX123456777', '2025-03-31 12:00:00.000000', 'batch2@company.com', '+1234567892', ...)]\
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0xffffab0c5050>\
+\
+    def do_executemany(self, cursor, statement, parameters, context=None):\
+>       cursor.executemany(statement, parameters)\
+E       sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: customers.company_name\
+E       [SQL: INSERT INTO customers (company_name, customer_type, tax_id, registration_date, contact_email, contact_phone, address, credit_score, approved_credit_limit, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\
+E       [parameters: [('Batch Company 19', 'supplier', 'TX123456888', '2025-03-31 12:00:00.000000', 'batch1@company.com', '+1234567891', '123 Batch St', 750, 300000.0, 'pending'), ('Batch Company 29', 'retailer', 'TX123456777', '2025-03-31 12:00:00.000000', 'batch2@company.com', '+1234567892', '456 Batch St', 700, 200000.0, 'pending')]]\
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)\
+\
+/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py:919: IntegrityError\
+=========================== short test summary info ============================\
+FAILED tests/test_customer_onboarding.py::test_get_customer - sqlalchemy.exc....\
+FAILED tests/test_customer_onboarding.py::test_list_customers - sqlalchemy.ex...\
+FAILED tests/test_customer_onboarding.py::test_update_status - sqlalchemy.exc...\
+FAILED tests/test_customer_onboarding.py::test_get_pending_customers - sqlalc...\
+========================= 4 failed, 2 passed in 1.56s ==========================\
+joseibay@MacBookAir SupplyChainManagement % \
+}

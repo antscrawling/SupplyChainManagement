@@ -6,9 +6,7 @@ from sqlalchemy import Column, String, Integer, Float, DateTime
 from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi import FastAPI
 
-# Define the APIRouter
 router = APIRouter()
 
 # SQLAlchemy setup
@@ -16,7 +14,6 @@ Base = declarative_base()
 engine = create_engine("sqlite:///./test.db", connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Define the CustomerModel
 class CustomerModel(Base):
     __tablename__ = "customers"
 
@@ -31,10 +28,8 @@ class CustomerModel(Base):
     approved_credit_limit = Column(Float)
     status = Column(String, default="pending")
 
-# Create the database tables
 Base.metadata.create_all(bind=engine)
 
-# Define the Pydantic models
 class Customer(BaseModel):
     company_name: str
     customer_type: str
@@ -53,7 +48,6 @@ class Customer(BaseModel):
 class StatusUpdate(BaseModel):
     status: str
 
-# Dependency to get the database session
 def get_db():
     db = SessionLocal()
     try:
@@ -61,7 +55,6 @@ def get_db():
     finally:
         db.close()
 
-# Define the endpoints
 @router.post("/", status_code=201)
 def create_customer(customer: Customer, db: Session = Depends(get_db)):
     db_customer = CustomerModel(**customer.dict())

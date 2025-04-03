@@ -2,6 +2,9 @@ import pytest
 from fastapi.testclient import TestClient
 from src.CustomerOnboarding import create_app
 from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from src.main import app  # Make sure this is the right import path
+
 
 # Create the app instance for testing
 app = FastAPI()

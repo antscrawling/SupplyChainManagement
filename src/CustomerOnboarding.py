@@ -8,16 +8,6 @@ import os
 from pathlib import Path
 
 # Create a global variable for the app but don't initialize it yet
-<<<<<<< HEAD
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the Supply Chain Management API"}
-=======
-app = None
->>>>>>> a1d143e1c480edae69f397583da1f2bc3fd3a21a
-
 class CustomerType(str, Enum):
     MANUFACTURER = "manufacturer"
     DISTRIBUTOR = "distributor"

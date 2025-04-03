@@ -4,10 +4,9 @@ from src.CustomerOnboarding import create_app
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from src.main import app  # Make sure this is the right import path
+from fastapi.testclient import TestClient
+from src.main import app  # assuming your app is in src/main.py
 
-
-# Create the app instance for testing
-app = FastAPI()
 client = TestClient(app)
 
 def test_create_customer():

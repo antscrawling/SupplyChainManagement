@@ -64,6 +64,7 @@ class OrderItem(Base):
     order = relationship("Order", back_populates="items")
 
 # Create the database tables
+#Base.metadata.create_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 print("Database tables created successfully.")
 

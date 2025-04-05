@@ -2,6 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from src.main import app
 import uuid
+from itertools import count
+from random import randrange as randbetween
 
 client = TestClient(app)
 
@@ -35,8 +37,10 @@ def test_create_customer():
     assert response.status_code == 201
 
 def test_create_customers_batch():
-    unique_name_1 = generate_unique_name("Batch Company 1")
-    unique_name_2 = generate_unique_name("Batch Company 2")
+    mycounter = count(7)
+    xcounter = randbetween(1,9)
+    unique_name_1 = f'Batch Company {xcounter}{next(mycounter)}'
+    unique_name_2 = f'Batch Company {xcounter}{next(mycounter)}'
     payload = [
         {
             "company_name": unique_name_1,

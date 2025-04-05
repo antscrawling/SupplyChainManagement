@@ -21,9 +21,9 @@ if [ $? -eq 0 ]; then
     echo "Root endpoint test passed!"
 else
     echo "Root endpoint test failed!"
-    docker logs supplychain-app
-    docker stop supplychain-app
-    docker rm supplychain-app
+    docker logs supplychain-dev
+    docker stop supplychain-dev
+    docker rm supplychain-dev
     exit 1
 fi
 
@@ -46,16 +46,16 @@ if [ $? -eq 0 ]; then
     echo "/customers/ endpoint test passed!"
 else
     echo "/customers/ endpoint test failed!"
-    docker logs supplychain-app
-    docker stop supplychain-app
-    docker rm supplychain-app
+    docker logs supplychain-dev
+    docker stop supplychain-dev
+    docker rm supplychain-dev
     exit 1
 fi
 
 # Stop and remove the container
 echo "Stopping and removing the application container..."
-docker stop supplychain-app
-docker rm supplychain-app
+docker stop supplychain-dev
+docker rm supplychain-dev
 
 echo "All tests passed!"
 

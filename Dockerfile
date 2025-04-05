@@ -18,7 +18,7 @@ COPY . .
 FROM base AS app
 ENV ENV=development
 EXPOSE 8080
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "3000", "--reload"]
 
 # Test stage: for running tests
 FROM base AS test

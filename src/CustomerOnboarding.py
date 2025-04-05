@@ -12,7 +12,7 @@ print("Current working directory:", os.getcwd())
 
 # Use an absolute path for the database
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'test.db')}"
+DATABASE_URL = "sqlite:///./data/test.db"
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
@@ -190,6 +190,16 @@ async def create_order(order: OrderCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_order)
 
+    # Serialize the items into dictionaries
+    serialized_items = [
+        {
+            "product_name": item.product_name,
+            "quantity": item.quantity,
+            "unit_price": item.unit_price
+        }
+        for item in db_items
+    ]
+
     # Return the response
     return {
         "id": db_order.id,
@@ -197,14 +207,7 @@ async def create_order(order: OrderCreate, db: Session = Depends(get_db)):
         "order_date": db_order.order_date,
         "total_amount": db_order.total_amount,
         "status": db_order.status,
-        "items": [
-            {
-                "product_name": item.product_name,
-                "quantity": item.quantity,
-                "unit_price": item.unit_price
-            }
-            for item in db_items
-        ]
+        "items": serialized_items
     }
 
 @router.get("/orders/{order_id}", response_model=OrderResponse)
@@ -212,4 +215,23 @@ async def get_order(order_id: int, db: Session = Depends(get_db)):
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    return order
+    
+    # Serialize the items into dictionaries
+    serialized_items = [
+        {
+            "product_name": item.product_name,
+            "quantity": item.quantity,
+            "unit_price": item.unit_price
+        }
+        for item in order.items
+    ]
+
+    # Return the response
+    return {
+        "id": order.id,
+        "customer_id": order.customer_id,
+        "order_date": order.order_date,
+        "total_amount": order.total_amount,
+        "status": order.status,
+        "items": serialized_items
+    }

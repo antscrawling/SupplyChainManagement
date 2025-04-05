@@ -1,12 +1,14 @@
-version: '3.9'
+
 services:
   app:
     build:
       context: .
       target: app
     ports:
-      - "8080:8080"
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8080 --reload
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data  # Corrected volume mount
+    command: uvicorn src.main:app --host 0.0.0.0 --port 3000 --reload
     environment:
       - ENV=development
 
@@ -17,3 +19,5 @@ services:
     depends_on:
       - app
     command: ["pytest", "tests/"]
+    environment:
+      - ENV=development

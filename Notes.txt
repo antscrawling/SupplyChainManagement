@@ -7,6 +7,112 @@ docker run -p 8080:8080 supplychain-dev
 docker build --target test -t supplychain-test .
 docker run supplychain-test
 
+-- to runt he yaml\
+
+docker-compose up --build
+link to the website
+
+To run the docker-compose.yaml file and start the services defined in it, follow these steps:
+
+---
+
+### Steps to Run docker-compose.yaml
+
+1. **Navigate to the Project Directory**:
+   Ensure you are in the directory where the docker-compose.yaml file is located:
+   ```bash
+   cd /Users/joseibay/Documents/SupplyChainManagement
+   ```
+
+2. **Build and Start the Services**:
+   Use the following command to build the Docker images and start the services:
+   ```bash
+   docker-compose up --build
+   ```
+
+   - The `--build` flag ensures that the images are rebuilt if there are any changes in the code or Dockerfile.
+
+3. **Verify the Services**:
+   - The `app` service will start the FastAPI application and expose it on port `3000` (mapped to `8080` inside the container).
+   - The `test` service will run the `pytest` tests.
+
+4. **Access the Application**:
+   - Open your browser and navigate to [http://localhost:3000/docs](http://localhost:3000/docs) to access the Swagger UI.
+   - Alternatively, use [http://localhost:3000/redoc](http://localhost:3000/redoc) for ReDoc documentation.
+
+5. **View Logs**:
+   - The logs for both the `app` and `test` services will be displayed in the terminal.
+   - You can monitor the test results and application logs in real time.
+
+6. **Stop the Services**:
+   To stop the services, press `CTRL+C` in the terminal and then run:
+   ```bash
+   docker-compose down
+   ```
+
+---
+
+### Additional Commands
+
+#### Rebuild Only
+If you want to rebuild the images without starting the services:
+```bash
+docker-compose build
+```
+
+#### Start Services Without Rebuilding
+If the images are already built and you just want to start the services:
+```bash
+docker-compose up
+```
+
+#### Run Only the `test` Service
+If you want to run only the `test` service:
+```bash
+docker-compose run test
+```
+
+#### View Running Containers
+To view the running containers:
+```bash
+docker ps
+```
+
+#### View Logs for a Specific Service
+To view logs for the `app` service:
+```bash
+docker-compose logs app
+```
+
+To view logs for the `test` service:
+```bash
+docker-compose logs test
+```
+
+---
+
+### Verify the Database Persistence
+
+1. Ensure the `volumes` section in the `app` service is correctly configured:
+   ```yaml
+   volumes:
+     - ./data:/app/data
+   ```
+
+2. Check that the `test.db` file is created in the `data` directory on your host machine:
+   ```bash
+   ls ./data/test.db
+   ```
+
+3. Restart the services and verify that the database persists:
+   ```bash
+   docker-compose down
+   docker-compose up
+   ```
+
+---
+
+Let me know if you encounter any issues!
 
 
 =================================
